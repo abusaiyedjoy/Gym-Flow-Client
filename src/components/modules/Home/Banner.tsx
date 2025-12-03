@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 const slides = [
     {
         id: 1,
-        image: '/images/banner9.jpg',
+        image: '/images/banner1.jpg',
         badge: 'Transform Your Body',
         title: 'Build Your Dream Physique',
         subtitle: 'Unlock your strength, boost endurance, and stay committed with our personalized fitness plans, tailored to meet your individual goals.',
@@ -16,7 +16,7 @@ const slides = [
     },
     {
         id: 2,
-        image: '/images/banner10.jpg',
+        image: '/images/banner2.jpg',
         badge: 'Premium Facilities',
         title: 'Redefine Your Lifestyle',
         subtitle: 'Start your transformation today. From weight loss to muscle building, we support you at every step with expert advice and top-notch facilities.',
@@ -24,11 +24,27 @@ const slides = [
     },
     {
         id: 3,
-        image: '/images/banner11.jpg',
+        image: '/images/banner3.jpg',
         badge: 'Group Classes',
         title: 'Build a Healthy & Fit Body',
         subtitle: 'GymFlow is more than a gym — it’s your partner in wellness. Our programs are designed to fit all fitness levels and deliver lasting results. Let’s shape a better you.',
-        cta: { primary: 'Contact Us'}
+        cta: { primary: 'Contact Us' }
+    },
+    {
+        id: 3,
+        image: '/images/banner6.jpg',
+        badge: 'Transform Your Body',
+        title: 'Build Your Dream Physique',
+        subtitle: 'Unlock your strength, boost endurance, and stay committed with our personalized fitness plans, tailored to meet your individual goals.',
+        cta: { primary: 'Start Today' }
+    },
+    {
+        id: 3,
+        image: '/images/banner7.jpg',
+        badge: 'Premium Facilities',
+        title: 'Redefine Your Lifestyle',
+        subtitle: 'Start your transformation today. From weight loss to muscle building, we support you at every step with expert advice and top-notch facilities.',
+        cta: { primary: 'Join Now' }
     },
 ]
 
@@ -58,21 +74,21 @@ export default function Banner() {
 
     // Auto-play carousel
     useEffect(() => {
-    if (SLIDE_COUNT <= 1 || isPaused) return;
+        if (SLIDE_COUNT <= 1 || isPaused) return;
 
-    const interval = setInterval(() => {
-        setCurrentSlide(prev => (prev + 1) % SLIDE_COUNT);
-    }, 5000);
+        const interval = setInterval(() => {
+            setCurrentSlide(prev => (prev + 1) % SLIDE_COUNT);
+        }, 4000);
 
-    return () => clearInterval(interval);
-}, [SLIDE_COUNT, isPaused]);
+        return () => clearInterval(interval);
+    }, [SLIDE_COUNT, isPaused]);
 
 
     const currentSlideData = slides[activeSlide]
 
     return (
-        <section 
-            className="relative w-full h-[80vh] lg:h-[90vh] overflow-hidden"
+        <section
+            className="relative w-full h-[80vh] lg:h-[90vh] xl:h-[95vh] overflow-hidden"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
         >
@@ -84,32 +100,32 @@ export default function Banner() {
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
                 {loopedSlides.map((slide, index) => (
-                    <div key={`${slide.id}-${index}`} className="min-w-full relative h-[80vh] lg:h-[90vh]">
-    {/* Background Image */}
-    <Image
-        src={slide.image}
-        alt={slide.title}
-        fill
-        className="object-cover object-top"
-        priority={index === 0}
-        quality={100}
-    />
+                    <div key={`${slide.id}-${index}`} className="min-w-full relative h-[80vh] lg:h-[90vh] xl:h-[95vh]">
+                        {/* Background Image */}
+                        <Image
+                            src={slide.image}
+                            alt={slide.title}
+                            fill
+                            className="object-cover object-top"
+                            priority={index === 0}
+                            quality={100}
+                        />
 
-    {/* Gradient Overlay */}
-    <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/50 to-transparent" />
-    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
-    <div className="absolute inset-0 bg-black/20" />
-</div>
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/50 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-black/20" />
+                    </div>
 
                 ))}
             </div>
 
             {/* Content Overlay */}
             <div className="absolute inset-0 z-10">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-[80vh] lg:h-[90vh] flex items-center">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-[80vh] lg:h-[90vh] xl:h-[95vh] flex items-center">
                     <div className="max-w-3xl">
                         {/* Animated Content */}
-                        <div 
+                        <div
                             key={activeSlide}
                             className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700"
                         >
@@ -118,7 +134,7 @@ export default function Banner() {
                             <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
                                 {currentSlideData.title.split(' ').map((word, idx) => (
                                     <span key={idx}>
-                                        {word === 'Dream' || word === 'Your' || word === 'Healthy' || word === 'Fit'? (
+                                        {word === 'Dream' || word === 'Your' || word === 'Healthy' || word === 'Fit' ? (
                                             <span className="text-transparent bg-clip-text bg-linear-to-r from-red-500 to-orange-500">
                                                 {word}{' '}
                                             </span>
@@ -136,8 +152,8 @@ export default function Banner() {
 
                             {/* CTA Buttons */}
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                                <Button 
-                                    size="lg" 
+                                <Button
+                                    size="lg"
                                     className="bg-linear-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-8 py-6 text-lg font-semibold shadow-2xl shadow-red-500/30 group"
                                 >
                                     {currentSlideData.cta.primary}
@@ -175,8 +191,8 @@ export default function Banner() {
                             onClick={() => setCurrentSlide(index)}
                             className={cn(
                                 'transition-all duration-300 rounded-full',
-                                isActive 
-                                    ? 'w-12 h-3 bg-linear-to-r from-red-500 to-orange-500' 
+                                isActive
+                                    ? 'w-12 h-3 bg-linear-to-r from-red-500 to-orange-500'
                                     : 'w-3 h-3 bg-white/40 hover:bg-white/60'
                             )}
                             aria-label={`Go to slide ${index + 1}`}
@@ -187,10 +203,10 @@ export default function Banner() {
 
             {/* Progress Bar */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-20">
-                <div 
+                <div
                     className="h-full bg-linear-to-r from-red-500 to-orange-500 transition-all duration-300 ease-linear"
-                    style={{ 
-                        width: isPaused ? `${((activeSlide + 1) / SLIDE_COUNT) * 100}%` : `${((currentSlide + 1) / SLIDE_COUNT) * 100}%` 
+                    style={{
+                        width: isPaused ? `${((activeSlide + 1) / SLIDE_COUNT) * 100}%` : `${((currentSlide + 1) / SLIDE_COUNT) * 100}%`
                     }}
                 />
             </div>

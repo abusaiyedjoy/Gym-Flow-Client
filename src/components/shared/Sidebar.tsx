@@ -18,7 +18,7 @@ export default function Sidebar({ isOpen, onClose, userRole }: SidebarProps) {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
-  const navItems = navigationConfig[userRole!] || navigationConfig['MEMBER'];
+  const navItems = navigationConfig[userRole!] || navigationConfig['TRAINER'];
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>

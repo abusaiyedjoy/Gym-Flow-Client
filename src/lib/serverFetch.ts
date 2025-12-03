@@ -17,7 +17,9 @@ const serverFetchHelper = async (endpoint: string, options: RequestInit): Promis
 
     const response = await fetch(`${BACKEND_API_URL}${endpoint}`, {
         headers: {
+            // Send token both in Cookie and Authorization to satisfy backends that read either
             Cookie: accessToken ? `accessToken=${accessToken}` : "",
+            Authorization: accessToken ? `Bearer ${accessToken}` : "",
             ...headers,
         },
         ...restOptions,

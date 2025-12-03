@@ -9,4 +9,7 @@ export interface UserInfo {
     isActive: boolean;
     isVerified: boolean;
     needPasswordChange: boolean;
+    admin?: any | null;
+    trainer?: any | null;
+    member?: any | null;
 };

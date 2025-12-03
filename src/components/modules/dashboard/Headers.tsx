@@ -5,6 +5,7 @@ import { Menu, Bell, Search, Sun, Moon, LogOut, User, Settings } from 'lucide-re
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import Avatar from '@/components/shared/Avatar';
+import { logoutUser } from '@/services/auth/logoutUser';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -14,12 +15,21 @@ interface HeaderProps {
 export default function Header({ onMenuClick, user }: HeaderProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { theme, setTheme } = useTheme();
   const router = useRouter();
 
-  const handleLogout = () => {
-    // Implement logout logic
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logoutUser();
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Fallback: redirect manually
+      router.push('/signin');
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const getRoleLabel = (role: string) => {
@@ -135,10 +145,11 @@ export default function Header({ onMenuClick, user }: HeaderProps) {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  disabled={isLoggingOut}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
                 </button>
               </div>
             )}

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Icon, ScrollIcon, Search, Sparkles } from "lucide-react";
+import { ArrowRight, ScrollIcon, Search, Sparkles } from "lucide-react";
 
 const steps = [
   {
@@ -65,7 +65,7 @@ export default function AITrainerSection() {
       ref={sectionRef}
       className="relative py-20 lg:py-28 bg-linear-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden"
     >{/* Background Pattern */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]" />
 
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
@@ -107,61 +107,62 @@ export default function AITrainerSection() {
                   const Icon = step.icon;
                   return (
                     <div
-                    key={index}
-                    className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                      }`}
-                    style={{ transitionDelay: `${index * 200}ms` }}
-                  >
-                    {/* Step Card */}
-                    <div
-                      className={`relative bg-zinc-900/80 backdrop-blur-sm border rounded-2xl p-8 transition-all duration-500 cursor-pointer ${activeStep === index
+                      key={index}
+                      className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                        }`}
+                      style={{ transitionDelay: `${index * 200}ms` }}
+                    >
+                      {/* Step Card */}
+                      <div
+                        className={`relative bg-zinc-900/80 backdrop-blur-sm border rounded-2xl p-8 transition-all duration-500 cursor-pointer ${activeStep === index
                           ? 'border-orange-500 shadow-2xl shadow-orange-500/20 scale-105'
                           : 'border-zinc-800 hover:border-zinc-700'
-                        }`}
-                      onClick={() => setActiveStep(index)}
-                    >
-                      {/* Icon Circle */}
-                      <div className="flex justify-center mb-6">
-                        <div className={`relative w-24 h-24 bg-linear-to-br ${step.color} rounded-full flex items-center justify-center shadow-xl ${activeStep === index ? 'animate-pulse' : ''
-                          }`}>
+                          }`}
+                        onClick={() => setActiveStep(index)}
+                      >
+                        {/* Icon Circle */}
+                        <div className="flex justify-center mb-6">
+                          <div className={`relative w-24 h-24 bg-linear-to-br ${step.color} rounded-full flex items-center justify-center shadow-xl ${activeStep === index ? 'animate-pulse' : ''
+                            }`}>
                             <Icon className="text-white size-10" />
 
-                          {/* Step Number Badge */}
-                          <div className="absolute -top-2 -right-2 w-10 h-10 bg-zinc-900 border-2 border-orange-500 rounded-full flex items-center justify-center">
-                            <span className="text-orange-400 font-bold text-sm">{step.number}</span>
+                            {/* Step Number Badge */}
+                            <div className="absolute -top-2 -right-2 w-10 h-10 bg-zinc-900 border-2 border-orange-500 rounded-full flex items-center justify-center">
+                              <span className="text-orange-400 font-bold text-sm">{step.number}</span>
+                            </div>
                           </div>
                         </div>
+
+                        {/* Content */}
+                        <h3 className="text-2xl font-bold text-white mb-3 text-center">
+                          {step.title}
+                        </h3>
+
+                        <p className="text-zinc-400 text-center mb-6 leading-relaxed">
+                          {step.description}
+                        </p>
+
+                        {/* Details List */}
+                        <div className="space-y-2">
+                          {step.details.map((detail, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 text-sm text-zinc-500"
+                            >
+                              <div className="w-1.5 h-1.5 bg-linear-to-r from-orange-500 to-red-600 rounded-full" />
+                              <span>{detail}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Active Indicator */}
+                        {activeStep === index && (
+                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-20 h-1 bg-linear-to-r from-orange-500 to-red-600 rounded-full" />
+                        )}
                       </div>
-
-                      {/* Content */}
-                      <h3 className="text-2xl font-bold text-white mb-3 text-center">
-                        {step.title}
-                      </h3>
-
-                      <p className="text-zinc-400 text-center mb-6 leading-relaxed">
-                        {step.description}
-                      </p>
-
-                      {/* Details List */}
-                      <div className="space-y-2">
-                        {step.details.map((detail, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-2 text-sm text-zinc-500"
-                          >
-                            <div className="w-1.5 h-1.5 bg-linear-to-r from-orange-500 to-red-600 rounded-full" />
-                            <span>{detail}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Active Indicator */}
-                      {activeStep === index && (
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-20 h-1 bg-linear-to-r from-orange-500 to-red-600 rounded-full" />
-                      )}
                     </div>
-                  </div>
-               ) })}
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -172,42 +173,43 @@ export default function AITrainerSection() {
               const Icon = step.icon;
               return (
                 <div
-                key={index}
-                className={`relative bg-zinc-900/80 backdrop-blur-sm border rounded-2xl p-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                  } ${activeStep === index
-                    ? 'border-orange-500 shadow-xl shadow-orange-500/20'
-                    : 'border-zinc-800'
-                  }`}
-                style={{ transitionDelay: `${index * 200}ms` }}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div className={`shrink-0 w-16 h-16 bg-linear-to-br ${step.color} rounded-xl flex items-center justify-center shadow-lg`}>
-                    <Icon className="text-white size-8" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-orange-400 font-bold text-sm">{step.number}</span>
-                      <h3 className="text-xl font-bold text-white">{step.title}</h3>
+                  key={index}
+                  className={`relative bg-zinc-900/80 backdrop-blur-sm border rounded-2xl p-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                    } ${activeStep === index
+                      ? 'border-orange-500 shadow-xl shadow-orange-500/20'
+                      : 'border-zinc-800'
+                    }`}
+                  style={{ transitionDelay: `${index * 200}ms` }}
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div className={`shrink-0 w-16 h-16 bg-linear-to-br ${step.color} rounded-xl flex items-center justify-center shadow-lg`}>
+                      <Icon className="text-white size-8" />
                     </div>
-                    <p className="text-zinc-400 text-sm mb-3">{step.description}</p>
 
-                    <div className="flex flex-wrap gap-2">
-                      {step.details.map((detail, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-1 bg-zinc-800 text-zinc-400 text-xs rounded-full"
-                        >
-                          {detail}
-                        </span>
-                      ))}
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-orange-400 font-bold text-sm">{step.number}</span>
+                        <h3 className="text-xl font-bold text-white">{step.title}</h3>
+                      </div>
+                      <p className="text-zinc-400 text-sm mb-3">{step.description}</p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {step.details.map((detail, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-1 bg-zinc-800 text-zinc-400 text-xs rounded-full"
+                          >
+                            {detail}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-           ) })}
+              )
+            })}
           </div>
         </div>
 

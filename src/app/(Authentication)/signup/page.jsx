@@ -30,11 +30,13 @@ const SignUp = () => {
     formData.append("password", data.password);
     formData.append("confirmPassword", data.confirmPassword);
 
+
+    // Call server action with FormData (registerUser expects FormData)
     const res = await registerUser(null, formData);
 
     if (res?.success) {
       setServerSuccess("Registration successful! Redirecting...");
-      router.push("/dashboard"); // registerUser already logs in, so redirect
+      router.push("/dashboard");
       reset();
     } else {
       setServerError(res?.message || "Registration failed. Please try again.");

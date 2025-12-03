@@ -9,39 +9,29 @@ import { serverFetch } from "@/lib/serverFetch";
 
 export const registerUser = async (_currentState: any, formData: any): Promise<any> => {
     try {
+        // Expect a FormData instance from the caller
         const payload = {
             name: formData.get('name'),
             phone: formData.get('phone'),
             email: formData.get('email'),
             password: formData.get('password'),
+            confirmPassword: formData.get('confirmPassword'),
         }
-
+        console.log("Register Payload:", payload);
 
         if (zodValidator(payload, registerValidationSchema).success === false) {
             return zodValidator(payload, registerValidationSchema);
         }
 
         const validatedPayload: any = zodValidator(payload, registerValidationSchema).data;
+
+        // Backend expects: { name, email, password }
         const registerData = {
+            name: validatedPayload.name,
+            email: validatedPayload.email,
             password: validatedPayload.password,
-            member: {
-                name: validatedPayload.name,
-                phone: validatedPayload.phone,
-                email: validatedPayload.email,
-            }
         }
 
-        // const newFormData = new FormData();
-
-        // newFormData.append("data", JSON.stringify(registerData));
-
-        // if (formData.get("file")) {
-        //     newFormData.append("file", formData.get("file") as Blob);
-        // }
-
-        // const res = await serverFetch.post("/auth/register", {
-        //     body: newFormData,
-        // })
         const res = await serverFetch.post("/auth/register", {
             body: JSON.stringify(registerData),
             headers: {

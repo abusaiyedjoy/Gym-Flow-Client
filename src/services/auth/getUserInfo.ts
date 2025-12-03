@@ -1,56 +1,110 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use server"
-
+"use server";
 
 import { serverFetch } from "@/lib/serverFetch";
+import { UserInfo } from "@/types/userInfo";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { getCookie } from "./tokenHandaler";
-import { UserInfo } from "@/types/userInfo";
-
 
 export const getUserInfo = async (): Promise<UserInfo | any> => {
-    let userInfo: UserInfo | any;
     try {
+        // -----------------------------------------------------
+        // 1️⃣ Get accessToken from cookies
+        // -----------------------------------------------------
+        const accessToken = await getCookie("accessToken");
 
-        const response = await serverFetch.get("/auth/me", {
-            cache: "force-cache",
-            next: { tags: ["user-info"] }
-        })
+        if (!accessToken) {
+            console.log("No access token found in cookies");
+            return null;
+        }
+
+        // -----------------------------------------------------
+        // 2️⃣ Decode token and extract base user data
+        // -----------------------------------------------------
+        let userInfoFromToken: any = null;
+
+        try {
+            const decoded = jwt.verify(
+                accessToken,
+                process.env.JWT_ACCESS_SECRET as string
+            ) as JwtPayload & { userId?: string };
+
+            userInfoFromToken = {
+                id: decoded.userId || "",
+                name: decoded.name || "Unknown User",
+                email: decoded.email || "",
+                role: decoded.role || "MEMBER",
+            };
+
+            console.log("Token decoded successfully:", { id: userInfoFromToken.id, role: userInfoFromToken.role });
+        } catch (jwtError) {
+            console.error("JWT verification failed:", jwtError);
+            // Token is invalid, return null to trigger re-login
+            return null;
+        }
+
+        // -----------------------------------------------------
+        // 3️⃣ Fetch extended user info from backend
+        // -----------------------------------------------------
+        let response;
+
+        try {
+            response = await serverFetch.get("/auth/me", {
+                cache: "no-store", // Changed from force-cache to no-store for fresh data
+            });
+
+            if (!response.ok) {
+                console.error("Failed to fetch user info from backend:", response.status);
+                // If backend call fails, return token data as fallback
+                return userInfoFromToken;
+            }
+        } catch (fetchError) {
+            console.error("Error fetching user info:", fetchError);
+            // Return token data as fallback
+            return userInfoFromToken;
+        }
 
         const result = await response.json();
 
-        if (result.success) {
-            const accessToken = await getCookie("accessToken");
-
-            if (!accessToken) {
-                throw new Error("No access token found");
-            }
-
-            const verifiedToken = jwt.verify(accessToken, process.env.JWT_SECRET as string) as JwtPayload;
-
-            userInfo = {
-                name: verifiedToken.name || "Unknown User",
-                email: verifiedToken.email,
-                role: verifiedToken.role,
-            }
+        if (!result.success || !result.data) {
+            console.log("Backend returned unsuccessful response, using token data");
+            return userInfoFromToken;
         }
 
-        userInfo = {
-            name: result.data.admin?.name || result.data.doctor?.name || result.data.patient?.name || result.data.name || "Unknown User",
-            ...result.data
+        // -----------------------------------------------------
+        // 4️⃣ Normalize /auth/me response
+        // -----------------------------------------------------
+        const data = result.data;
+
+        const normalizedUser: UserInfo = {
+            id: data.id || userInfoFromToken.id,
+            name: data.name || userInfoFromToken.name,
+            email: data.email || userInfoFromToken.email,
+            role: data.role || userInfoFromToken.role,
+
+            phone: data.phone ?? null,
+            profileImage: data.profileImage ?? null,
+            isActive: !!data.isActive,
+            isVerified: !!data.isVerified,
+            needPasswordChange: !!data.needPasswordChange,
+
+            // Nested relations
+            admin: data.admin ?? null,
+            trainer: data.trainer ?? null,
+            member: data.member ?? null,
         };
 
+        console.log("User info retrieved successfully:", { id: normalizedUser.id, role: normalizedUser.role });
 
+        // -----------------------------------------------------
+        // 5️⃣ Return merged data
+        // -----------------------------------------------------
+        return normalizedUser;
 
-        return userInfo;
     } catch (error: any) {
-        console.log(error);
-        return {
-            id: "",
-            name: "Unknown User",
-            email: "",
-            role: "MEMBER",
-        };
-    }
+        console.error("getUserInfo ERROR:", error);
 
-}
+        // Return null instead of dummy data to indicate auth failure
+        return null;
+    }
+};

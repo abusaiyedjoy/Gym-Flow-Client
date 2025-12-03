@@ -9,7 +9,15 @@ export function proxy(request: NextRequest) {
 // Alternatively, you can use a default export:
 // export default function proxy(request: NextRequest) { ... }
  
-// See "Matching Paths" below to learn more
 export const config = {
-  matcher: '/dashboard/:path*',
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - api (API routes)
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+         */
+        // '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.well-known).*)',
+    ],
 }

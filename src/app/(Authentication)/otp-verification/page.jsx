@@ -1,6 +1,7 @@
 "use client";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
+import { Dumbbell } from "lucide-react";
 
 const OTPVerification = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -8,6 +9,15 @@ const OTPVerification = () => {
   return (
     <div className="flex justify-center items-center h-screen w-full bg-gray-900  bg-linear-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[40px_40px]" />
+      {/* Logo */}
+        <Link href="/" className="absolute top-12 left-12 flex items-center space-x-2 group">
+          <div className="p-2 bg-red-600 rounded-lg group-hover:bg-red-700 transition-colors">
+            <Dumbbell className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-xl lg:text-2xl font-bold text-white">
+            Gym<span className="text-red-600">Flow</span>
+          </span>
+        </Link>
       <div className="w-full flex flex-col justify-center items-center px-10">
         <h2 className="text-white text-3xl font-bold mb-2">OTP Verification</h2>
         <p className="text-gray-400 mb-6">Enter the 6-digit code sent to your email</p>
@@ -29,7 +39,7 @@ const OTPVerification = () => {
           Verify OTP
         </button>
 
-        <p className="text-red-500 mt-2 cursor-pointer">Didn't receive the code? Resend</p>
+        <p className="text-gray-400 mt-2 cursor-pointer">Didn't receive the code? <span className="text-primary cursor-pointer hover:underline">Resend</span></p>
 
         <p className="text-gray-400 mt-5 z-20">
           Remember your password? <Link href="/signin" className="text-primary">Login</Link>

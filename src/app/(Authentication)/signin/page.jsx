@@ -2,18 +2,31 @@
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { Dumbbell } from "lucide-react";
+import { loginUser } from "@/services/auth/loginUser";
+import { useRouter } from "next/navigation";
 
 const SignIn = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
-
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const [focusedField, setFocusedField] = useState(null);
+  const [serverError, setServerError] = useState("");
+  const router = useRouter();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    setServerError("");
+
+    const formData = new FormData();
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    formData.append("redirect", "/dashboard"); // optional
+
+    const response = await loginUser(null, formData);
+
+    if (response?.success) {
+      router.push(response.redirectTo || "/dashboard");
+    } else {
+      setServerError(response?.message || "Login failed");
+    }
   };
 
   return (
@@ -29,13 +42,28 @@ const SignIn = () => {
 
       {/* Right Side - Form Section */}
       <div className="relative w-full lg:w-1/2 flex flex-col justify-center items-center px-6 md:px-10 py-8 bg-linear-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[40px_40px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[40px_40px]" />
+        {/* Logo */}
+        <Link href="/" className="absolute top-12 left-12 flex items-center space-x-2 group">
+          <div className="p-2 bg-red-600 rounded-lg group-hover:bg-red-700 transition-colors">
+            <Dumbbell className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-xl lg:text-2xl font-bold text-white">
+            Gym<span className="text-red-600">Flow</span>
+          </span>
+        </Link>
+        {/* Header */}
         <h2 className="text-white text-3xl font-bold mb-2 text-center">
           Welcome Back!
         </h2>
         <p className="text-gray-400 mb-6 text-center">
           Please sign in to continue.
         </p>
+
+        {/* 🔥 Show server errors */}
+        {serverError && (
+          <p className="text-red-500 mb-4 text-center">{serverError}</p>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md z-50">
@@ -46,8 +74,8 @@ const SignIn = () => {
             </label>
             <div
               className={`w-full p-3 rounded flex items-center border-2 ${focusedField === "email"
-                  ? "border-l-4 border-primary bg-gray-700"
-                  : "border-gray-700 bg-gray-800"
+                ? "border-l-4 border-primary bg-gray-700"
+                : "border-gray-700 bg-gray-800"
                 }`}
             >
               <input
@@ -72,8 +100,8 @@ const SignIn = () => {
             </label>
             <div
               className={`w-full p-3 rounded flex items-center border-2 ${focusedField === "password"
-                  ? "border-l-4 border-primary bg-gray-700"
-                  : "border-gray-700 bg-gray-800"
+                ? "border-l-4 border-primary bg-gray-700"
+                : "border-gray-700 bg-gray-800"
                 }`}
             >
               <input

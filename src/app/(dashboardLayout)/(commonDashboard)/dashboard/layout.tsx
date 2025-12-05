@@ -1,5 +1,6 @@
 import DashboardLayout from "@/components/modules/dashboard/Layout";
 import { getUserInfo } from "@/services/auth/getUserInfo";
+import { redirect } from "next/navigation";
 
 export default async function MemberDashboardLayout({
   children,
@@ -8,7 +9,7 @@ export default async function MemberDashboardLayout({
 }) {
   const user = await getUserInfo();
 
-  if (!user) return null;
+  if (!user) return redirect('/signin');
 
   return <DashboardLayout user={user}>{children}</DashboardLayout>;
 }

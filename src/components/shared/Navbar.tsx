@@ -168,35 +168,36 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                 </Link>
                             )
                             }
-
-                            {/* Mobile Menu Button */}
-                            <button
-                                className="md:hidden text-white p-2 hover:bg-gray-800 rounded-lg transition-colors"
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                aria-label="Toggle menu"
-                            >
-                                <Menu className="w-6 h-6" />
-                            </button>
                         </div>
+
+                        {/* Mobile Menu Button */}
+                        <button
+                            className="md:hidden bg-red-600 text-white p-2 hover:bg-red-700 rounded-lg transition-colors z-50"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
                     </div>
                 </div>
             </nav>
 
             {/* Mobile Drawer Overlay */}
             <div
-                className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-60 md:hidden transition-opacity duration-300 ${isMobileMenuOpen
-                    ? "opacity-100 pointer-events-auto"
-                    : "opacity-0 pointer-events-none"
+                className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden transition-opacity duration-300 ${isMobileMenuOpen
+                        ? "opacity-100 pointer-events-auto"
+                        : "opacity-0 pointer-events-none"
                     }`}
                 onClick={() => setIsMobileMenuOpen(false)}
             />
 
             {/* Mobile Side Drawer */}
             <div
-                className={`fixed top-0 right-0 h-full w-[280px] bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 z-70 md:hidden transform transition-transform duration-300 ease-out shadow-2xl ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+                className={`fixed top-0 right-0 h-full w-[280px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 z-[70] md:hidden transform transition-transform duration-300 ease-out shadow-2xl ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
                     }`}
             >
                 <div className="flex flex-col h-full">
+
                     {/* Drawer Header */}
                     <div className="flex items-center justify-between p-6 border-b border-gray-700">
                         <Link
@@ -211,10 +212,10 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                 Gym<span className="text-red-600">Flow</span>
                             </span>
                         </Link>
+
                         <button
                             onClick={() => setIsMobileMenuOpen(false)}
                             className="text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition-colors"
-                            aria-label="Close menu"
                         >
                             <X className="w-6 h-6" />
                         </button>
@@ -227,15 +228,18 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                 <Link
                                     key={link.name}
                                     href={link.href}
-                                    className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium group ${isActive(link.href)
-                                        ? "text-white bg-linear-to-r from-red-600 to-orange-600 shadow-lg shadow-red-500/20"
-                                        : "text-gray-300 hover:text-white hover:bg-gray-800/50"
-                                        }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
+                                    className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium group ${isActive(link.href)
+                                            ? "text-white bg-gradient-to-r from-red-600 to-orange-600 shadow-lg shadow-red-500/20"
+                                            : "text-gray-300 hover:text-white hover:bg-gray-800/50"
+                                        }`}
                                 >
                                     <span className="flex-1">{link.name}</span>
+
                                     <svg
-                                        className={`w-4 h-4 transform group-hover:translate-x-1 transition-all ${isActive(link.href) ? "text-white" : "text-gray-500 group-hover:text-red-500"
+                                        className={`w-4 h-4 transform transition-all ${isActive(link.href)
+                                                ? "text-white"
+                                                : "text-gray-500 group-hover:text-red-500 group-hover:translate-x-1"
                                             }`}
                                         fill="none"
                                         viewBox="0 0 24 24"
@@ -253,7 +257,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                         </nav>
                     </div>
 
-                    {/* Drawer Footer with Auth Buttons */}
+                    {/* Drawer Footer */}
                     <div className="p-6 border-t border-gray-700 space-y-3 bg-gray-900/50">
                         {isAuthenticated ? (
                             <>
@@ -262,18 +266,19 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                         Dashboard
                                     </Button>
                                 </Link>
+
                                 <Button
                                     onClick={handleLogout}
                                     disabled={isLoggingOut}
-                                    className="w-full bg-linear-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-lg shadow-red-500/20 disabled:opacity-50"
+                                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-lg shadow-red-500/20 disabled:opacity-50"
                                 >
                                     <LogOut className="w-4 h-4 mr-2" />
-                                    {isLoggingOut ? 'Logging out...' : 'Logout'}
+                                    {isLoggingOut ? "Logging out..." : "Logout"}
                                 </Button>
                             </>
                         ) : (
                             <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
-                                <Button className="w-full bg-linear-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-lg shadow-red-500/20">
+                                <Button className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-lg shadow-red-500/20">
                                     Sign In
                                 </Button>
                             </Link>
@@ -281,6 +286,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                     </div>
                 </div>
             </div>
+
         </>
     );
 }

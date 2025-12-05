@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/shared/Sidebar';
 import Header from './Headers';
+import { useTokenRefresh } from '@/hooks/useTokenRefresh';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,9 @@ export default function DashboardLayout({ children, user }: DashboardLayoutProps
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
+
+  // Auto-refresh token to prevent logout
+  useTokenRefresh();
 
   // Check if mobile
   useEffect(() => {
@@ -45,7 +49,7 @@ export default function DashboardLayout({ children, user }: DashboardLayoutProps
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -56,7 +60,7 @@ export default function DashboardLayout({ children, user }: DashboardLayoutProps
       {/* Mobile Overlay */}
       {sidebarOpen && isMobile && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
           onClick={() => setSidebarOpen(false)}
         />
       )}

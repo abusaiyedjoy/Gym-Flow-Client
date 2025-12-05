@@ -29,37 +29,95 @@ export interface NavItem {
 }
 
 export const navigationConfig: Record<string, NavItem[]> = {
-  // Super Admin Navigation
+  // Super Admin Navigation (routes under /dashboard/admin/) - includes all admin features
   SUPER_ADMIN: [
     {
       label: 'Dashboard',
-      href: '/super-admin',
+      href: '/dashboard/admin',
       icon: LayoutDashboard,
     },
     {
-      label: 'All Users',
-      href: '/super-admin/users',
+      label: 'Members',
+      href: '/dashboard/admin/members',
       icon: Users,
+      children: [
+        { label: 'All Members', href: '/dashboard/admin/members', icon: Users },
+        { label: 'Add Member', href: '/dashboard/admin/members/create', icon: UserPlus },
+      ],
+    },
+    {
+      label: 'Trainers',
+      href: '/dashboard/admin/trainers',
+      icon: Dumbbell,
+      children: [
+        { label: 'All Trainers', href: '/dashboard/admin/trainers', icon: Dumbbell },
+        { label: 'Add Trainer', href: '/dashboard/admin/trainers/create', icon: UserPlus },
+      ],
+    },
+    {
+      label: 'Plans',
+      href: '/dashboard/admin/plans',
+      icon: ClipboardList,
+      children: [
+        { label: 'All Plans', href: '/dashboard/admin/plans', icon: ClipboardList },
+        { label: 'Create Plan', href: '/dashboard/admin/plans/create', icon: UserPlus },
+      ],
+    },
+    {
+      label: 'Payments',
+      href: '/dashboard/admin/payment',
+      icon: CreditCard,
+    },
+    {
+      label: 'Attendance',
+      href: '/dashboard/admin/attendance',
+      icon: Calendar,
+    },
+    {
+      label: 'Classes',
+      href: '/dashboard/admin/classes',
+      icon: Activity,
+      children: [
+        { label: 'All Classes', href: '/dashboard/admin/classes', icon: Activity },
+        { label: 'Create Class', href: '/dashboard/admin/classes/create', icon: UserPlus },
+      ],
+    },
+    {
+      label: 'Reports',
+      href: '/dashboard/admin/reports',
+      icon: BarChart3,
+      children: [
+        { label: 'Overview', href: '/dashboard/admin/reports', icon: BarChart3 },
+        { label: 'Revenue', href: '/dashboard/admin/reports/revenue', icon: CreditCard },
+        { label: 'Attendance', href: '/dashboard/admin/reports/attendance', icon: Calendar },
+        { label: 'Members', href: '/dashboard/admin/reports/members', icon: Users },
+        { label: 'Trainers', href: '/dashboard/admin/reports/trainers', icon: Dumbbell },
+      ],
     },
     {
       label: 'Admins',
-      href: '/super-admin/admins',
+      href: '/dashboard/admin/admins',
       icon: Shield,
     },
     {
       label: 'System Settings',
-      href: '/super-admin/system-settings',
+      href: '/dashboard/admin/system-settings',
       icon: Settings,
     },
     {
-      label: 'Audit Logs',
-      href: '/super-admin/audit-logs',
-      icon: FileText,
+      label: 'Database',
+      href: '/dashboard/admin/database',
+      icon: Database,
     },
     {
-      label: 'Database',
-      href: '/super-admin/database',
-      icon: Database,
+      label: 'Settings',
+      href: '/dashboard/admin/settings',
+      icon: Settings,
+      children: [
+        { label: 'General', href: '/dashboard/admin/settings', icon: Settings },
+        { label: 'System', href: '/dashboard/admin/settings/system', icon: Database },
+        { label: 'Users', href: '/dashboard/admin/settings/users', icon: Users },
+      ],
     },
   ],
 
@@ -67,72 +125,76 @@ export const navigationConfig: Record<string, NavItem[]> = {
   ADMIN: [
     {
       label: 'Dashboard',
-      href: '/admin',
+      href: '/dashboard/admin',
       icon: LayoutDashboard,
     },
     {
       label: 'Members',
-      href: '/admin/members',
+      href: '/dashboard/admin/members',
       icon: Users,
       children: [
-        { label: 'All Members', href: '/admin/members', icon: Users },
-        { label: 'Add Member', href: '/admin/members/create', icon: UserPlus },
+        { label: 'All Members', href: '/dashboard/admin/members', icon: Users },
+        { label: 'Add Member', href: '/dashboard/admin/members/create', icon: UserPlus },
       ],
     },
     {
       label: 'Trainers',
-      href: '/admin/trainers',
+      href: '/dashboard/admin/trainers',
       icon: Dumbbell,
       children: [
-        { label: 'All Trainers', href: '/admin/trainers', icon: Dumbbell },
-        { label: 'Add Trainer', href: '/admin/trainers/create', icon: UserPlus },
+        { label: 'All Trainers', href: '/dashboard/admin/trainers', icon: Dumbbell },
+        { label: 'Add Trainer', href: '/dashboard/admin/trainers/create', icon: UserPlus },
       ],
     },
     {
       label: 'Plans',
-      href: '/admin/plans',
+      href: '/dashboard/admin/plans',
       icon: ClipboardList,
+      children: [
+        { label: 'All Plans', href: '/dashboard/admin/plans', icon: ClipboardList },
+        { label: 'Create Plan', href: '/dashboard/admin/plans/create', icon: UserPlus },
+      ],
     },
     {
       label: 'Payments',
-      href: '/admin/payments',
+      href: '/dashboard/admin/payment',
       icon: CreditCard,
     },
     {
       label: 'Attendance',
-      href: '/admin/attendance',
+      href: '/dashboard/admin/attendance',
       icon: Calendar,
     },
     {
       label: 'Classes',
-      href: '/admin/classes',
+      href: '/dashboard/admin/classes',
       icon: Activity,
-    },
-    {
-      label: 'Reports',
-      href: '/admin/reports',
-      icon: BarChart3,
       children: [
-        { label: 'Revenue', href: '/admin/reports/revenue', icon: CreditCard },
-        { label: 'Attendance', href: '/admin/reports/attendance', icon: Calendar },
-        { label: 'Members', href: '/admin/reports/members', icon: Users },
-        { label: 'Trainers', href: '/admin/reports/trainers', icon: Dumbbell },
+        { label: 'All Classes', href: '/dashboard/admin/classes', icon: Activity },
+        { label: 'Create Class', href: '/dashboard/admin/classes/create', icon: UserPlus },
       ],
     },
     {
-      label: 'Notifications',
-      href: '/admin/notifications',
-      icon: Bell,
-    },
-    {
-      label: 'Messages',
-      href: '/admin/messages',
-      icon: MessageSquare,
+      label: 'Reports',
+      href: '/dashboard/admin/reports',
+      icon: BarChart3,
+      children: [
+        { label: 'Overview', href: '/dashboard/admin/reports', icon: BarChart3 },
+        { label: 'Revenue', href: '/dashboard/admin/reports/revenue', icon: CreditCard },
+        { label: 'Attendance', href: '/dashboard/admin/reports/attendance', icon: Calendar },
+        { label: 'Members', href: '/dashboard/admin/reports/members', icon: Users },
+        { label: 'Trainers', href: '/dashboard/admin/reports/trainers', icon: Dumbbell },
+      ],
     },
     {
       label: 'Settings',
-      href: '/admin/settings',
+      href: '/dashboard/admin/settings',
       icon: Settings,
+      children: [
+        { label: 'General', href: '/dashboard/admin/settings', icon: Settings },
+        { label: 'System', href: '/dashboard/admin/settings/system', icon: Database },
+        { label: 'Users', href: '/dashboard/admin/settings/users', icon: Users },
+      ],
     },
   ],
 
@@ -140,51 +202,51 @@ export const navigationConfig: Record<string, NavItem[]> = {
   TRAINER: [
     {
       label: 'Dashboard',
-      href: '/trainer',
+      href: '/dashboard/trainer',
       icon: LayoutDashboard,
     },
     {
-      label: 'My Members',
-      href: '/trainer/my-members',
+      label: 'My Clients',
+      href: '/dashboard/trainer/my-menbers',
       icon: Users,
     },
     {
       label: 'Workout Plans',
-      href: '/trainer/workout-plans',
+      href: '/dashboard/trainer/workout-plans',
       icon: BookOpen,
       children: [
-        { label: 'All Plans', href: '/trainer/workout-plans', icon: BookOpen },
-        { label: 'Create Plan', href: '/trainer/workout-plans/create', icon: UserPlus },
+        { label: 'All Plans', href: '/dashboard/trainer/workout-plans', icon: BookOpen },
+        { label: 'Create Plan', href: '/dashboard/trainer/workout-plans/create', icon: UserPlus },
       ],
     },
     {
       label: 'Classes',
-      href: '/trainer/classes',
+      href: '/dashboard/trainer/classes',
       icon: Activity,
     },
     {
       label: 'Schedule',
-      href: '/trainer/schedule',
+      href: '/dashboard/trainer/schedule',
       icon: Calendar,
     },
     {
       label: 'Performance',
-      href: '/trainer/performance',
+      href: '/dashboard/trainer/performance',
       icon: TrendingUp,
     },
     {
       label: 'Reviews',
-      href: '/trainer/reviews',
+      href: '/dashboard/trainer/reviews',
       icon: Award,
     },
     {
-      label: 'Messages',
-      href: '/trainer/messages',
-      icon: MessageSquare,
+      label: 'Profile',
+      href: '/dashboard/trainer/profile',
+      icon: Users,
     },
     {
       label: 'Settings',
-      href: '/trainer/settings',
+      href: '/dashboard/trainer/settings',
       icon: Settings,
     },
   ],
@@ -193,12 +255,12 @@ export const navigationConfig: Record<string, NavItem[]> = {
   MEMBER: [
     {
       label: 'Dashboard',
-      href: '/member',
+      href: '/dashboard/member',
       icon: LayoutDashboard,
     },
     {
       label: 'Find Trainer',
-      href: '/member/find-trainer',
+      href: '/dashboard/member/find-trainer',
       icon: Target,
       badge: 'AI',
     },
@@ -209,42 +271,46 @@ export const navigationConfig: Record<string, NavItem[]> = {
     },
     {
       label: 'Workout Plan',
-      href: '/member/workout-plan',
+      href: '/dashboard/member/workout-plan',
       icon: BookOpen,
     },
     {
       label: 'Progress',
-      href: '/member/progress',
+      href: '/dashboard/member/progress',
       icon: TrendingUp,
       children: [
-        { label: 'Overview', href: '/member/progress', icon: TrendingUp },
-        { label: 'Body Metrics', href: '/member/progress/metrics', icon: Activity },
-        { label: 'Photos', href: '/member/progress/photos', icon: Award },
+        { label: 'Overview', href: '/dashboard/member/progress', icon: TrendingUp },
+        { label: 'Body Metrics', href: '/dashboard/member/progress/metrics', icon: Activity },
+        { label: 'Photos', href: '/dashboard/member/progress/photos', icon: Award },
       ],
     },
     {
       label: 'My Classes',
-      href: '/member/classes',
+      href: '/dashboard/member/classes',
       icon: Activity,
     },
     {
       label: 'Membership',
-      href: '/member/membership',
+      href: '/dashboard/member/membership',
       icon: ClipboardList,
+      children: [
+        { label: 'Current Plan', href: '/dashboard/member/membership', icon: ClipboardList },
+        { label: 'Renew', href: '/dashboard/member/membership/renew', icon: CreditCard },
+      ],
     },
     {
       label: 'Payments',
-      href: '/member/payments',
+      href: '/dashboard/member/payments',
       icon: CreditCard,
     },
     {
-      label: 'Messages',
-      href: '/member/messages',
-      icon: MessageSquare,
+      label: 'Profile',
+      href: '/dashboard/member/profile',
+      icon: Users,
     },
     {
       label: 'Settings',
-      href: '/member/settings',
+      href: '/dashboard/member/settings',
       icon: Settings,
     },
   ],

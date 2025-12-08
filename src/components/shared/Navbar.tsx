@@ -112,10 +112,10 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                 <div className="relative group">
                                     <button
                                         onClick={() => setShowProfileMenu(!showProfileMenu)}
-                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        className="border-2 border-red-300 rounded-full transition-all cursor-pointer"
                                     >
                                         <Avatar
-                                            src={user?.profileImage}
+                                            src={user?.profileImage || "/profile.jpg"}
                                             alt={user?.name || "User"}
                                             size="sm"
                                         />
@@ -129,7 +129,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                             </div>
 
                                             <button
-                                                onClick={() => router.push(`/${user?.role?.toLowerCase()}/dashboard`)}
+                                                onClick={() => router.push(`/dashboard/${user?.role?.toLowerCase()}`)}
                                                 className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
                                             >
                                                 {/* Dashboard icon */}
@@ -138,7 +138,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                             </button>
 
                                             <button
-                                                onClick={() => router.push(`/${user?.role?.toLowerCase()}/profile`)}
+                                                onClick={() => router.push(`/dashboard/${user?.role?.toLowerCase()}/profile`)}
                                                 className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
                                             >
                                                 <User className="w-4 h-4" />

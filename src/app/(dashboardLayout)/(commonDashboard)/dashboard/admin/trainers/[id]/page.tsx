@@ -1,8 +1,22 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Edit, Mail, Phone, Award, Users, Calendar, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Mail,
+  Phone,
+  Calendar,
+  Award,
+  Users,
+  Star,
+  Loader2,
+  AlertCircle,
+  Dumbbell,
+  Clock,
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageComponents";
@@ -10,288 +24,471 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { TrainerService } from "@/services/trainer/trainer.service";
+import { Trainer } from "@/types/trainer.types";
 
-const mockTrainer = {
-  id: "T-001",
-  name: "David Martinez",
-  email: "david.martinez@gymflow.com",
-  phone: "+1 (555) 234-5678",
-  joinDate: "2023-06-15",
-  status: "Active",
-  specialization: "Strength Training",
-  rating: 4.9,
-  totalClients: 32,
-  activeSessions: 156,
-  experience: "8 years",
+const getStatusColor = (isActive: boolean) => {
+  return isActive ? "bg-green-500/10 text-green-500" : "bg-gray-500/10 text-gray-500";
 };
 
-const certifications = [
-  { name: "Certified Personal Trainer (CPT)", issuer: "NASM", year: "2016" },
-  { name: "Strength & Conditioning Specialist", issuer: "NSCA", year: "2018" },
-  { name: "Nutrition Coach", issuer: "Precision Nutrition", year: "2020" },
-];
+const formatDate = (date: string | null | undefined) => {
+  if (!date) return "N/A";
+  return new Date(date).toLocaleDateString();
+};
 
-const clients = [
-  { id: "M-001", name: "John Smith", plan: "Premium", progress: 85, joinDate: "2024-01-15" },
-  { id: "M-012", name: "Emily Davis", plan: "Elite", progress: 92, joinDate: "2024-02-20" },
-  { id: "M-023", name: "Michael Brown", plan: "Premium", progress: 78, joinDate: "2024-03-10" },
-  { id: "M-034", name: "Sarah Wilson", plan: "Elite", progress: 88, joinDate: "2024-01-25" },
-];
+const calculateDaysSince = (date: string | null | undefined) => {
+  if (!date) return 0;
+  const start = new Date(date);
+  const now = new Date();
+  const diff = now.getTime() - start.getTime();
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+};
 
-const schedule = [
-  { day: "Monday", time: "6:00 AM - 2:00 PM", sessions: 6 },
-  { day: "Tuesday", time: "6:00 AM - 2:00 PM", sessions: 5 },
-  { day: "Wednesday", time: "6:00 AM - 2:00 PM", sessions: 6 },
-  { day: "Thursday", time: "6:00 AM - 2:00 PM", sessions: 5 },
-  { day: "Friday", time: "6:00 AM - 12:00 PM", sessions: 4 },
-];
-
-const getStatusColor = (status: string) => {
-  return status === "Active" ? "bg-green-500/10 text-green-500" : "bg-gray-500/10 text-gray-500";
+const getDayOfWeekLabel = (day: string) => {
+  return day.charAt(0) + day.slice(1).toLowerCase();
 };
 
 export default function TrainerDetailPage() {
   const params = useParams();
+  const [trainer, setTrainer] = useState<Trainer | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTrainer = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await TrainerService.getTrainerById(params.id as string);
+        setTrainer(data);
+      } catch (err: any) {
+        setError(err.message || "Failed to load trainer details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.id) {
+      fetchTrainer();
+    }
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !trainer) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <p className="text-lg text-muted-foreground">{error || "Trainer not found"}</p>
+        <Link href="/admin/trainers">
+          <Button variant="outline">Back to Trainers</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const capacityPercentage = (trainer.currentClients / trainer.maxCapacity) * 100;
+  const daysWorking = calculateDaysSince(trainer.joinDate);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin/trainers">
+        <Link href="/admin/trainers">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <PageHeader
-          title={mockTrainer.name}
-          description={`Trainer ID: ${mockTrainer.id}`}
-          action={
-            <Link href={`/dashboard/admin/trainers/${params.id}/edit`}>
-              <Button>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
-              </Button>
-            </Link>
-          }
+          title={trainer.user.name}
+          description={`Trainer ID: ${trainer.employeeId}`}
         />
-      </div>
-
-      {/* Profile Overview */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-1">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <Avatar className="h-32 w-32">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback className="text-3xl">{mockTrainer.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="text-2xl font-bold">{mockTrainer.name}</h3>
-                <p className="text-muted-foreground">{mockTrainer.specialization}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className={getStatusColor(mockTrainer.status)}>
-                  {mockTrainer.status}
-                </Badge>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                  <span className="font-semibold">{mockTrainer.rating}</span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center gap-3 text-sm">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span>{mockTrainer.email}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span>{mockTrainer.phone}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Joined {mockTrainer.joinDate}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Award className="h-4 w-4 text-muted-foreground" />
-                <span>{mockTrainer.experience} Experience</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="md:col-span-2 space-y-6">
-          {/* Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <Users className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-2xl font-bold">{mockTrainer.totalClients}</p>
-                  <p className="text-sm text-muted-foreground">Total Clients</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <Calendar className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                  <p className="text-2xl font-bold">{mockTrainer.activeSessions}</p>
-                  <p className="text-sm text-muted-foreground">Sessions Completed</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <Star className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
-                  <p className="text-2xl font-bold">{mockTrainer.rating}</p>
-                  <p className="text-sm text-muted-foreground">Average Rating</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Certifications */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Certifications</CardTitle>
-              <CardDescription>Professional credentials and qualifications</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {certifications.map((cert, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Award className="h-5 w-5 text-primary mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-semibold">{cert.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {cert.issuer} • {cert.year}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+        <div className="ml-auto">
+          <Link href={`/admin/trainers/${trainer.id}/edit`}>
+            <Button>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Trainer
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Detailed Information */}
-      <Tabs defaultValue="clients" className="space-y-6">
+      {/* Profile Overview */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <Avatar className="h-32 w-32">
+              <AvatarImage src={trainer.user.profileImage || undefined} />
+              <AvatarFallback className="text-2xl bg-purple-600 text-white">
+                {trainer.user.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex-1 space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge className={getStatusColor(trainer.user.isActive)}>
+                  {trainer.user.isActive ? "Active" : "Inactive"}
+                </Badge>
+                {trainer.isAvailable && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    Available
+                  </Badge>
+                )}
+                <Badge variant="secondary">
+                  {trainer.experienceYears} Years Experience
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span className="text-sm">{trainer.user.email}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4" />
+                  <span className="text-sm">{trainer.user.phone || "N/A"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-sm">Joined {formatDate(trainer.joinDate)}</span>
+                </div>
+              </div>
+
+              {trainer.bio && (
+                <p className="text-sm text-muted-foreground">{trainer.bio}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Rating</CardTitle>
+            <Star className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{trainer.rating.toFixed(1)}</div>
+            <p className="text-xs text-muted-foreground">
+              {trainer.reviewCount} reviews
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Current Clients</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {trainer.currentClients} / {trainer.maxCapacity}
+            </div>
+            <Progress value={capacityPercentage} className="mt-2" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{trainer.totalClients}</div>
+            <p className="text-xs text-muted-foreground">All time</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Days Working</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{daysWorking}</div>
+            <p className="text-xs text-muted-foreground">Since joining</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="details" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="clients">Clients</TabsTrigger>
-          <TabsTrigger value="schedule">Schedule</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="specializations">Specializations</TabsTrigger>
+          <TabsTrigger value="availability">Availability</TabsTrigger>
+          <TabsTrigger value="members">Members ({trainer.members?.length || 0})</TabsTrigger>
+          <TabsTrigger value="classes">Classes ({trainer.classes?.length || 0})</TabsTrigger>
+          <TabsTrigger value="reviews">Reviews ({trainer.reviews?.length || 0})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="clients" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Clients ({clients.length})</CardTitle>
-              <CardDescription>Members currently training with this trainer</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {clients.map((client) => (
-                <div key={client.id} className="flex items-center gap-4 p-4 border rounded-lg">
-                  <Avatar>
-                    <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback>{client.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold">{client.name}</p>
-                      <Badge variant="outline">{client.plan}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Member since {client.joinDate}</p>
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-muted-foreground">Progress</span>
-                        <span className="text-xs font-medium">{client.progress}%</span>
-                      </div>
-                      <Progress value={client.progress} />
-                    </div>
-                  </div>
-                  <Link href={`/dashboard/admin/members/${client.id}`}>
-                    <Button variant="outline" size="sm">View</Button>
-                  </Link>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="schedule">
-          <Card>
-            <CardHeader>
-              <CardTitle>Weekly Schedule</CardTitle>
-              <CardDescription>Training sessions and availability</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {schedule.map((item) => (
-                <div key={item.day} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-semibold">{item.day}</p>
-                    <p className="text-sm text-muted-foreground">{item.time}</p>
-                  </div>
-                  <Badge variant="outline">{item.sessions} sessions</Badge>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="performance">
-          <div className="grid gap-6 md:grid-cols-2">
+        {/* Details Tab */}
+        <TabsContent value="details" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Client Retention</CardTitle>
-                <CardDescription>Client satisfaction and retention rate</CardDescription>
+                <CardTitle>Professional Information</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Retention Rate</span>
-                      <span className="text-sm text-muted-foreground">94%</span>
-                    </div>
-                    <Progress value={94} />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Client Satisfaction</span>
-                      <span className="text-sm text-muted-foreground">4.9/5.0</span>
-                    </div>
-                    <Progress value={98} />
-                  </div>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Employee ID</span>
+                  <span className="text-sm font-medium">{trainer.employeeId}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Experience</span>
+                  <span className="text-sm font-medium">{trainer.experienceYears} years</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Max Capacity</span>
+                  <span className="text-sm font-medium">{trainer.maxCapacity} clients</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Success Rate</span>
+                  <span className="text-sm font-medium">{trainer.successRate}%</span>
+                </div>
+                {trainer.salary && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Salary</span>
+                    <span className="text-sm font-medium">${trainer.salary}</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Session Statistics</CardTitle>
-                <CardDescription>This month's performance</CardDescription>
+                <CardTitle>Additional Information</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Total Sessions</span>
-                    <span className="font-semibold">45</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Completed</span>
-                    <span className="font-semibold text-green-600">43</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Cancelled</span>
-                    <span className="font-semibold text-red-600">2</span>
-                  </div>
-                  <div className="flex items-center justify-between pt-4 border-t">
-                    <span className="text-sm font-medium">Completion Rate</span>
-                    <span className="font-bold text-primary">95.6%</span>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Languages</p>
+                  <div className="flex flex-wrap gap-2">
+                    {trainer.languages.map((lang, index) => (
+                      <Badge key={index} variant="secondary">
+                        {lang}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
+                {trainer.certifications && trainer.certifications.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Certifications</p>
+                    <div className="flex flex-wrap gap-2">
+                      {trainer.certifications.map((cert, index) => (
+                        <Badge key={index} variant="outline">
+                          {cert}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Specializations Tab */}
+        <TabsContent value="specializations">
+          <Card>
+            <CardHeader>
+              <CardTitle>Specializations</CardTitle>
+              <CardDescription>Areas of expertise</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trainer.specializations && trainer.specializations.length > 0 ? (
+                <div className="space-y-4">
+                  {trainer.specializations.map((spec, index) => (
+                    <div key={index} className="flex items-center justify-between border-b pb-3">
+                      <div>
+                        <p className="font-medium">{spec.specialization.replace(/_/g, " ")}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {spec.yearsOfExperience} years experience
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Level</span>
+                        <Badge variant="secondary">{spec.proficiencyLevel}/10</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No specializations added yet</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Availability Tab */}
+        <TabsContent value="availability">
+          <Card>
+            <CardHeader>
+              <CardTitle>Weekly Availability</CardTitle>
+              <CardDescription>Trainer's available time slots</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trainer.availability && trainer.availability.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Day</TableHead>
+                      <TableHead>Start Time</TableHead>
+                      <TableHead>End Time</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {trainer.availability.map((avail, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {getDayOfWeekLabel(avail.dayOfWeek)}
+                        </TableCell>
+                        <TableCell>{avail.startTime}</TableCell>
+                        <TableCell>{avail.endTime}</TableCell>
+                        <TableCell>
+                          <Badge variant={avail.isAvailable ? "default" : "secondary"}>
+                            {avail.isAvailable ? "Available" : "Unavailable"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-sm text-muted-foreground">No availability schedule set</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Members Tab */}
+        <TabsContent value="members">
+          <Card>
+            <CardHeader>
+              <CardTitle>Assigned Members</CardTitle>
+              <CardDescription>Members training with this trainer</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trainer.members && trainer.members.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Member</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Plan</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {trainer.members.map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell className="font-medium">{member.user.name}</TableCell>
+                        <TableCell>{member.user.email}</TableCell>
+                        <TableCell>{member.currentPlan?.name || "No Plan"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-sm text-muted-foreground">No members assigned yet</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Classes Tab */}
+        <TabsContent value="classes">
+          <Card>
+            <CardHeader>
+              <CardTitle>Classes</CardTitle>
+              <CardDescription>Classes conducted by this trainer</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trainer.classes && trainer.classes.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Class Name</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Schedules</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {trainer.classes.map((classItem) => (
+                      <TableRow key={classItem.id}>
+                        <TableCell className="font-medium">{classItem.name}</TableCell>
+                        <TableCell>
+                          <Badge variant={classItem.isActive ? "default" : "secondary"}>
+                            {classItem.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{classItem.schedules?.length || 0} schedules</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-sm text-muted-foreground">No classes assigned yet</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Reviews Tab */}
+        <TabsContent value="reviews">
+          <Card>
+            <CardHeader>
+              <CardTitle>Member Reviews</CardTitle>
+              <CardDescription>Feedback from members</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trainer.reviews && trainer.reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {trainer.reviews.map((review) => (
+                    <div key={review.id} className="border-b pb-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={review.member.user.profileImage || undefined} />
+                            <AvatarFallback>
+                              {review.member.user.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-sm">{review.member.user.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(review.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-medium">{review.rating}</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No reviews yet</p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

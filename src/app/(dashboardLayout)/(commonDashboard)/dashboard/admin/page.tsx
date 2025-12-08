@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
     Users,
     Dumbbell,
@@ -31,8 +30,6 @@ import {
     Area,
     AreaChart,
 } from "recharts";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 
 // Mock data for charts
@@ -115,7 +112,6 @@ const recentActivities: RecentActivity[] = [
 ];
 
 export default function AdminDashboardPage() {
-    const [timeRange, setTimeRange] = useState("month");
 
     const stats = [
         {
@@ -261,7 +257,7 @@ export default function AdminDashboardPage() {
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <div className="mt-4 space-y-2">
-                                    {membershipDistribution.map((item) => (
+                                    {membershipDistribution?.map((item) => (
                                         <div key={item.name} className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <div
@@ -437,7 +433,7 @@ export default function AdminDashboardPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {recentActivities.map((activity) => (
+                                {recentActivities?.map((activity) => (
                                     <div
                                         key={activity.id}
                                         className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"

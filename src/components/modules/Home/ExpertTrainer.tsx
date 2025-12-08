@@ -1,11 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Star, Award, ArrowRight, Users } from "lucide-react";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { ChevronLeft, ChevronRight, Star, Award, ArrowRight, Users, UserCheck } from "lucide-react";
 import Link from 'next/link';
+import Image from 'next/image';
 
 const exampleTrainers = [
   {
@@ -92,44 +90,59 @@ export default function ExpertTrainers() {
     return visible;
   };
 
-  const TrainerCard = ({ trainer }: { trainer: typeof exampleTrainers[0] }) => (
-    <Card className="group relative pt-0 overflow-hidden border border-zinc-200 dark:border-zinc-800 hover:border-orange-500/50 dark:hover:border-orange-500/50 transition-all duration-300 hover:shadow-2xl bg-white dark:bg-zinc-900">
+  const TrainerCard = ({ trainer }: { trainer: any }) => {
+  return (
+    <div className="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-2xl transition-all duration-300 hover:border-orange-500/40">
 
-      {/* Profile Image - Large and Prominent */}
-      <div className="relative w-full overflow-hidden bg-linear-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
-        <Avatar className="w-full h-[350px] rounded-none">
-          <AvatarImage 
-            src={trainer.imageUrl} 
-            alt={trainer.name}
-            className="object-cover object-center"
-          />
-        </Avatar>
+      {/* Profile Image */}
+      <div className="relative w-full h-64 overflow-hidden bg-zinc-200 dark:bg-zinc-800">
+        <Image
+          src={trainer?.profileImage || "/Images/profile2.jpg"}
+          alt={trainer?.name}
+          fill
+          className="object-cover object-center group-hover:scale-105 transition-all duration-500"
+        />
+
+        {trainer?.isAvailable && (
+          <span className="absolute top-3 left-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow-md">
+            Available
+          </span>
+        )}
+
+        {!trainer.isAvailable && (
+          <span className="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full shadow-md">
+            Busy
+          </span>
+        )}
       </div>
 
-      <CardContent className="p-4 space-y-3">
+      {/* Card Content */}
+      <div className="p-5 space-y-3">
 
-        {/* Trainer Name */}
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-500 transition-colors">
-          {trainer.name}
+        {/* Name */}
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white group-hover:text-orange-600 transition-colors">
+          {trainer?.name}
         </h3>
 
-        {/* Specialty - Description */}
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 min-h-10">
-          {trainer.specialty} • {trainer.experienceYears} Years Experience
+        {/* Specialty (dynamic) */}
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 min-h-10 line-clamp-2">
+          {trainer.specializations?.map((s: { name: any; }) => s.name).join(" • ")}
+          {" • "}
+          {trainer.experienceYears} Years Experience
         </p>
 
         {/* Rating */}
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             {[...Array(5)].map((_, i) => (
-              <Star 
-                key={i} 
+              <Star
+                key={i}
                 className={`w-4 h-4 ${
-                  i < Math.floor(trainer.rating) 
-                    ? 'fill-orange-500 text-orange-500' 
-                    : i < trainer.rating 
-                    ? 'fill-orange-500/50 text-orange-500' 
-                    : 'fill-zinc-200 text-zinc-200 dark:fill-zinc-700 dark:text-zinc-700'
+                  i < Math.floor(trainer.rating)
+                    ? "fill-orange-500 text-orange-500"
+                    : i < trainer.rating
+                    ? "fill-orange-500/50 text-orange-500"
+                    : "fill-zinc-300 text-zinc-300 dark:fill-zinc-700 dark:text-zinc-700"
                 }`}
               />
             ))}
@@ -138,53 +151,63 @@ export default function ExpertTrainers() {
             {trainer.rating.toFixed(1)}
           </span>
           <span className="text-sm text-zinc-500 dark:text-zinc-400">
-            ({trainer.reviews})
+            ({trainer.reviewCount})
           </span>
         </div>
 
         {/* Stats */}
         <div className="flex items-center gap-3 text-xs text-zinc-600 dark:text-zinc-400 pt-2 border-t border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-1">
-            <Award className="w-3.5 h-3.5 text-orange-500" />
+            <Award className="w-4 h-4 text-orange-500" />
             <span>{trainer.experienceYears} Years</span>
           </div>
+
           <div className="flex items-center gap-1">
-            <Users className="w-3.5 h-3.5 text-orange-500" />
-            <span>{trainer.clients}+ Clients</span>
+            <Users className="w-4 h-4 text-orange-500" />
+            <span>{trainer.totalClients}+ Clients</span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <UserCheck className="w-4 h-4 text-orange-500" />
+            <span>{trainer.successRate}% Success</span>
           </div>
         </div>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5">
-          {trainer.tags.slice(0, 2).map((tag, idx) => (
-            <Badge
+        {/* Tags (Certifications) */}
+        {/* <div className="flex flex-wrap gap-1.5">
+          {trainer.certifications.slice(0, 2).map((cert, idx) => (
+            <span
               key={idx}
-              variant="outline"
-              className="text-xs px-2 py-0.5 bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-400"
+              className="text-xs px-2 py-1 rounded-md bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800"
             >
-              {tag}
-            </Badge>
+              {cert}
+            </span>
           ))}
-          {trainer.tags.length > 2 && (
-            <Badge
-              variant="outline"
-              className="text-xs px-2 py-0.5 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400"
-            >
-              +{trainer.tags.length - 2}
-            </Badge>
-          )}
-        </div>
 
-        {/* Action Button */}
-        <Button
-          className="w-full bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-300 group/btn font-semibold"
-        >
+          {trainer.certifications.length > 2 && (
+            <span className="text-xs px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700">
+              +{trainer.certifications.length - 2}
+            </span>
+          )}
+        </div> */}
+
+        {/* CTA Button */}
+        <button className="
+          w-full mt-2 py-2.5 text-sm font-semibold text-white 
+          rounded-lg shadow-md 
+          bg-gradient-to-r from-orange-500 to-red-600 
+          hover:from-orange-600 hover:to-red-700 
+          transition-all duration-300 
+          flex items-center justify-center gap-2
+        ">
           View Profile
-          <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
-        </Button>
-      </CardContent>
-    </Card>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
   );
+};
+
 
   return (
     <section className="relative py-20 lg:py-28 bg-linear-to-br from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 overflow-hidden">

@@ -1,15 +1,13 @@
 import React from "react";
 
-const CommonDashboardLayout = async ({
+export default function CommonDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
-}) => {
+}) {
   return (
-        <main className="">
-          <div className="">{children}</div>
-        </main>
+    <main className="">
+      <div className="">{children}</div>
+    </main>
   );
-};
-
-export default CommonDashboardLayout;
+}

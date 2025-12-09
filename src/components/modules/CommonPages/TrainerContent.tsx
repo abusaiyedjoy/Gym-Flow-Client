@@ -3,38 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Search, Star, Award, Users, Calendar, TrendingUp, Heart, MessageSquare, ArrowRight, Filter, Sparkles, CheckCircle, Globe, Zap, Target, Medal, Phone, Mail, UserCheck, Clock } from "lucide-react";
 import Image from 'next/image';
-
-interface Trainer {
-  id: string;
-  userId: string;
-  employeeId: string;
-  experienceYears: number;
-  certifications: string[];
-  bio: string;
-  languages: string[];
-  successRate: number;
-  totalClients: number;
-  currentClients: number;
-  maxCapacity: number;
-  rating: number;
-  reviewCount: number;
-  joinedDate: string;
-  salary: number;
-  isAvailable: boolean;
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    profileImage: string | null;
-  };
-  specializations?: Array<{
-    id: string;
-    name: string;
-  }>;
-}
+import Link from 'next/link';
+import { TrainerService } from '@/services/trainer/trainer.service';
+import { Trainer as TrainerType } from '@/types/trainer.types';
 
 const gradients = [
   "from-orange-500 to-red-600",
@@ -48,311 +19,49 @@ const gradients = [
 ];
 
 export default function TrainerContent() {
-  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [trainers, setTrainers] = useState<TrainerType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'available' | 'experienced'>('all');
   const [sortBy, setSortBy] = useState<'rating' | 'experience' | 'clients'>('rating');
 
-  // Mock fetch - replace with actual API call
+  // Fetch trainers from API
   useEffect(() => {
-    // Simulated data - replace with actual API call
-    const mockTrainers: Trainer[] = [
-      {
-        id: "1",
-        userId: "user1",
-        employeeId: "TRN20250001",
-        experienceYears: 8,
-        certifications: ["NASM-CPT", "Nutrition Specialist", "Strength Coach"],
-        bio: "Passionate about helping clients achieve their strength and nutrition goals through personalized programs.",
-        languages: ["Bengali", "English"],
-        successRate: 92,
-        totalClients: 150,
-        currentClients: 18,
-        maxCapacity: 20,
-        rating: 4.9,
-        reviewCount: 245,
-        joinedDate: "2020-01-15T00:00:00.000Z",
-        salary: 65000,
-        isAvailable: true,
-        createdAt: "2020-01-15T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user1",
-          name: "Rahul Ahmed",
-          email: "rahul.ahmed@gymflow.com",
-          phone: "01712345678",
-          profileImage: "/Images/profile1.jpg"
-        },
-        specializations: [
-          { id: "1", name: "Weight Training" },
-          { id: "2", name: "Nutrition" }
-        ]
-      },
-      {
-        id: "2",
-        userId: "user2",
-        employeeId: "TRN20250002",
-        experienceYears: 10,
-        certifications: ["RYT-500", "Meditation Teacher", "Prenatal Yoga"],
-        bio: "Dedicated to helping individuals find balance through yoga and meditation practices.",
-        languages: ["Bengali", "English", "Hindi"],
-        successRate: 96,
-        totalClients: 200,
-        currentClients: 20,
-        maxCapacity: 20,
-        rating: 5.0,
-        reviewCount: 312,
-        joinedDate: "2018-03-20T00:00:00.000Z",
-        salary: 70000,
-        isAvailable: true,
-        createdAt: "2018-03-20T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user2",
-          name: "Fatima Khan",
-          email: "fatima.khan@gymflow.com",
-          phone: "01812345678",
-          profileImage: null
-        },
-        specializations: [
-          { id: "3", name: "Yoga" },
-          { id: "4", name: "Mindfulness" }
-        ]
-      },
-      {
-        id: "3",
-        userId: "user3",
-        employeeId: "TRN20250003",
-        experienceYears: 7,
-        certifications: ["CF-L2", "Strength Coach", "Olympic Lifting"],
-        bio: "Specializing in high-intensity functional training for maximum performance.",
-        languages: ["Bengali", "English"],
-        successRate: 88,
-        totalClients: 120,
-        currentClients: 15,
-        maxCapacity: 20,
-        rating: 4.8,
-        reviewCount: 189,
-        joinedDate: "2021-06-10T00:00:00.000Z",
-        salary: 60000,
-        isAvailable: false,
-        createdAt: "2021-06-10T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user3",
-          name: "Arif Hossain",
-          email: "arif.hossain@gymflow.com",
-          phone: "01912345678",
-          profileImage: null
-        },
-        specializations: [
-          { id: "5", name: "CrossFit" },
-          { id: "6", name: "Functional Training" }
-        ]
-      },
-      {
-        id: "1",
-        userId: "user1",
-        employeeId: "TRN20250001",
-        experienceYears: 8,
-        certifications: ["NASM-CPT", "Nutrition Specialist", "Strength Coach"],
-        bio: "Passionate about helping clients achieve their strength and nutrition goals through personalized programs.",
-        languages: ["Bengali", "English"],
-        successRate: 92,
-        totalClients: 150,
-        currentClients: 18,
-        maxCapacity: 20,
-        rating: 4.9,
-        reviewCount: 245,
-        joinedDate: "2020-01-15T00:00:00.000Z",
-        salary: 65000,
-        isAvailable: true,
-        createdAt: "2020-01-15T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user1",
-          name: "Rahul Ahmed",
-          email: "rahul.ahmed@gymflow.com",
-          phone: "01712345678",
-          profileImage: "/Images/profile1.jpg"
-        },
-        specializations: [
-          { id: "1", name: "Weight Training" },
-          { id: "2", name: "Nutrition" }
-        ]
-      },
-      {
-        id: "2",
-        userId: "user2",
-        employeeId: "TRN20250002",
-        experienceYears: 10,
-        certifications: ["RYT-500", "Meditation Teacher", "Prenatal Yoga"],
-        bio: "Dedicated to helping individuals find balance through yoga and meditation practices.",
-        languages: ["Bengali", "English", "Hindi"],
-        successRate: 96,
-        totalClients: 200,
-        currentClients: 20,
-        maxCapacity: 20,
-        rating: 5.0,
-        reviewCount: 312,
-        joinedDate: "2018-03-20T00:00:00.000Z",
-        salary: 70000,
-        isAvailable: true,
-        createdAt: "2018-03-20T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user2",
-          name: "Fatima Khan",
-          email: "fatima.khan@gymflow.com",
-          phone: "01812345678",
-          profileImage: null
-        },
-        specializations: [
-          { id: "3", name: "Yoga" },
-          { id: "4", name: "Mindfulness" }
-        ]
-      },
-      {
-        id: "3",
-        userId: "user3",
-        employeeId: "TRN20250003",
-        experienceYears: 7,
-        certifications: ["CF-L2", "Strength Coach", "Olympic Lifting"],
-        bio: "Specializing in high-intensity functional training for maximum performance.",
-        languages: ["Bengali", "English"],
-        successRate: 88,
-        totalClients: 120,
-        currentClients: 15,
-        maxCapacity: 20,
-        rating: 4.8,
-        reviewCount: 189,
-        joinedDate: "2021-06-10T00:00:00.000Z",
-        salary: 60000,
-        isAvailable: false,
-        createdAt: "2021-06-10T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user3",
-          name: "Arif Hossain",
-          email: "arif.hossain@gymflow.com",
-          phone: "01912345678",
-          profileImage: null
-        },
-        specializations: [
-          { id: "5", name: "CrossFit" },
-          { id: "6", name: "Functional Training" }
-        ]
-      },
-      {
-        id: "1",
-        userId: "user1",
-        employeeId: "TRN20250001",
-        experienceYears: 8,
-        certifications: ["NASM-CPT", "Nutrition Specialist", "Strength Coach"],
-        bio: "Passionate about helping clients achieve their strength and nutrition goals through personalized programs.",
-        languages: ["Bengali", "English"],
-        successRate: 92,
-        totalClients: 150,
-        currentClients: 18,
-        maxCapacity: 20,
-        rating: 4.9,
-        reviewCount: 245,
-        joinedDate: "2020-01-15T00:00:00.000Z",
-        salary: 65000,
-        isAvailable: true,
-        createdAt: "2020-01-15T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user1",
-          name: "Rahul Ahmed",
-          email: "rahul.ahmed@gymflow.com",
-          phone: "01712345678",
-          profileImage: "/Images/profile1.jpg"
-        },
-        specializations: [
-          { id: "1", name: "Weight Training" },
-          { id: "2", name: "Nutrition" }
-        ]
-      },
-      {
-        id: "2",
-        userId: "user2",
-        employeeId: "TRN20250002",
-        experienceYears: 10,
-        certifications: ["RYT-500", "Meditation Teacher", "Prenatal Yoga"],
-        bio: "Dedicated to helping individuals find balance through yoga and meditation practices.",
-        languages: ["Bengali", "English", "Hindi"],
-        successRate: 96,
-        totalClients: 200,
-        currentClients: 20,
-        maxCapacity: 20,
-        rating: 5.0,
-        reviewCount: 312,
-        joinedDate: "2018-03-20T00:00:00.000Z",
-        salary: 70000,
-        isAvailable: true,
-        createdAt: "2018-03-20T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user2",
-          name: "Fatima Khan",
-          email: "fatima.khan@gymflow.com",
-          phone: "01812345678",
-          profileImage: null
-        },
-        specializations: [
-          { id: "3", name: "Yoga" },
-          { id: "4", name: "Mindfulness" }
-        ]
-      },
-      {
-        id: "3",
-        userId: "user3",
-        employeeId: "TRN20250003",
-        experienceYears: 7,
-        certifications: ["CF-L2", "Strength Coach", "Olympic Lifting"],
-        bio: "Specializing in high-intensity functional training for maximum performance.",
-        languages: ["Bengali", "English"],
-        successRate: 88,
-        totalClients: 120,
-        currentClients: 15,
-        maxCapacity: 20,
-        rating: 4.8,
-        reviewCount: 189,
-        joinedDate: "2021-06-10T00:00:00.000Z",
-        salary: 60000,
-        isAvailable: false,
-        createdAt: "2021-06-10T00:00:00.000Z",
-        updatedAt: "2025-12-07T00:00:00.000Z",
-        user: {
-          id: "user3",
-          name: "Arif Hossain",
-          email: "arif.hossain@gymflow.com",
-          phone: "01912345678",
-          profileImage: null
-        },
-        specializations: [
-          { id: "5", name: "CrossFit" },
-          { id: "6", name: "Functional Training" }
-        ]
-      },
-    ];
-    
-    setTimeout(() => {
-      setTrainers(mockTrainers);
-      setLoading(false);
-    }, 500);
+    const fetchTrainers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await TrainerService.getAllTrainers({
+          page: 1,
+          limit: 50, // Get all trainers for public display
+        });
+
+        if (response.success && response.data) {
+          setTrainers(response.data);
+        } else {
+          setError("Failed to load trainers");
+        }
+      } catch (err) {
+        console.error("Fetch trainers error:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch trainers");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrainers();
   }, []);
 
   const filteredTrainers = trainers
     .filter(trainer => {
-      const matchesSearch = 
+      const matchesSearch =
         trainer.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        trainer.bio.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        trainer.specializations?.some(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      const matchesFilter = 
+        (trainer.bio && trainer.bio.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        trainer.specializations?.some(s => s.specialization.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchesFilter =
         selectedFilter === 'all' ||
         (selectedFilter === 'available' && trainer.isAvailable) ||
         (selectedFilter === 'experienced' && trainer.experienceYears >= 7);
@@ -385,12 +94,30 @@ export default function TrainerContent() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center max-w-md p-8 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-2xl font-bold mb-2">Error Loading Trainers</h3>
+          <p className="text-zinc-600 dark:text-zinc-400 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-950 dark:to-zinc-900">
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
-        
+
         {/* Gradient Orbs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-600/20 rounded-full blur-3xl animate-pulse" />
@@ -440,11 +167,10 @@ export default function TrainerContent() {
                 <button
                   key={value}
                   onClick={() => setSelectedFilter(value as any)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
-                    selectedFilter === value
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${selectedFilter === value
                       ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {label}
@@ -498,7 +224,7 @@ export default function TrainerContent() {
               {filteredTrainers.map((trainer, index) => {
                 const capacityPercentage = (trainer.currentClients / trainer.maxCapacity) * 100;
                 const isFull = capacityPercentage >= 100;
-                
+
                 return (
                   <div
                     key={trainer.id}
@@ -507,7 +233,7 @@ export default function TrainerContent() {
                     {/* Gradient Header */}
                     <div className={`relative h-48 bg-gradient-to-br ${getGradient(index)} overflow-hidden`}>
                       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:20px_20px]" />
-                      
+
                       {/* Profile Image */}
                       <div className="absolute left-1/2 -translate-x-1/2 translate-y-1/2">
                         <div className="relative">
@@ -526,7 +252,7 @@ export default function TrainerContent() {
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Rating Badge */}
                           {trainer.rating > 0 && (
                             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white dark:bg-zinc-900 px-3 py-1 rounded-full shadow-lg border border-zinc-200 dark:border-zinc-800">
@@ -572,7 +298,7 @@ export default function TrainerContent() {
                                 key={spec.id}
                                 className="text-xs px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full font-medium"
                               >
-                                {spec.name}
+                                {spec.specialization.replace(/_/g, ' ')}
                               </span>
                             ))}
                           </div>
@@ -610,9 +336,8 @@ export default function TrainerContent() {
                         </div>
                         <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all ${
-                              isFull ? 'bg-red-500' : 'bg-gradient-to-r from-green-400 to-green-600'
-                            }`}
+                            className={`h-full rounded-full transition-all ${isFull ? 'bg-red-500' : 'bg-gradient-to-r from-green-400 to-green-600'
+                              }`}
                             style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
                           />
                         </div>
@@ -630,7 +355,7 @@ export default function TrainerContent() {
                         </div>
                         <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
                           <Calendar className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                          <span>Joined {formatDate(trainer.joinedDate)}</span>
+                          <span>Joined {formatDate(trainer.joinDate)}</span>
                         </div>
                       </div>
 
@@ -655,10 +380,12 @@ export default function TrainerContent() {
                       </div>
 
                       {/* CTA Button */}
-                      <button className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all hover:shadow-lg group/btn">
-                        View Profile
-                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                      </button>
+                      <Link href={`/trainers/${trainer.id}`}>
+                        <button className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all hover:shadow-lg group/btn">
+                          View Profile
+                          <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 );

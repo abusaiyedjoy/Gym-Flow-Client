@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, Bell, Search, Sun, Moon, LogOut, User, Settings } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Menu, Search, LogOut, User, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Avatar from '@/components/shared/Avatar';
 import { logoutUser } from '@/services/auth/logoutUser';
@@ -14,9 +13,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick, user }: HeaderProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { theme, setTheme } = useTheme();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -70,34 +67,6 @@ export default function Header({ onMenuClick, user }: HeaderProps) {
 
         {/* Right Side */}
         <div className="flex items-center gap-2">
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-all hover:scale-105"
-          >
-            {theme === 'dark' ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </button>
-
-          {/* Notifications */}
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-all hover:scale-105"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-            </button>
-
-            {/* {showNotifications && (
-              <NotificationDropdown
-                onClose={() => setShowNotifications(false)}
-              />
-            )} */}
-          </div>
 
           {/* User Profile */}
           <div className="relative">

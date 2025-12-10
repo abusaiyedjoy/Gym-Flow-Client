@@ -3,84 +3,87 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Edit, Mail, Phone, Calendar, CreditCard, TrendingUp, Activity, Loader2, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Mail,
+  Phone,
+  Calendar,
+  Shield,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Award,
+  DollarSign,
+  Clock,
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageComponents";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { MemberService } from "@/services/member/member.service";
-import { Member } from "@/types/member.types";
+import { UserService } from "@/services/user/user.service";
+import { UserWithDetails, Role } from "@/types/user.types";
 
-const getStatusColor = (isActive: boolean) => {
-  return isActive ? "bg-green-500/10 text-green-500" : "bg-gray-500/10 text-gray-500";
+const getRoleColor = (userRole: Role) => {
+  switch (userRole) {
+    case Role.SUPER_ADMIN:
+      return "bg-purple-100 text-purple-800";
+    case Role.ADMIN:
+      return "bg-blue-100 text-blue-800";
+    case Role.TRAINER:
+      return "bg-green-100 text-green-800";
+    case Role.MEMBER:
+      return "bg-gray-100 text-gray-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
 };
 
 const formatDate = (date: string | null | undefined) => {
   if (!date) return "N/A";
-  return new Date(date).toLocaleDateString();
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 };
 
-const calculateDaysSince = (date: string | null | undefined) => {
-  if (!date) return 0;
-  const start = new Date(date);
-  const now = new Date();
-  const diff = now.getTime() - start.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
+const formatDateTime = (date: string | null | undefined) => {
+  if (!date) return "N/A";
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
-const calculatePlanProgress = (startDate: string | null | undefined, endDate: string | null | undefined) => {
-  if (!startDate || !endDate) return 0;
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  const now = new Date().getTime();
-  const total = end - start;
-  const elapsed = now - start;
-  return Math.min(Math.max((elapsed / total) * 100, 0), 100);
-};
-
-const calculateDuration = (checkIn: string, checkOut?: string | null) => {
-  if (!checkOut) return "In Progress";
-  const start = new Date(checkIn).getTime();
-  const end = new Date(checkOut).getTime();
-  const diff = end - start;
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}h ${minutes}m`;
-};
-
-export default function MemberDetailPage() {
+export default function UserDetailPage() {
   const params = useParams();
-  const [member, setMember] = useState<Member | null>(null);
+  const [user, setUser] = useState<UserWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMember = async () => {
+    const fetchUser = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await MemberService.getMemberById(params.id as string);
-        setMember(data);
+        const data = await UserService.getUserById(params.id as string);
+        setUser(data);
       } catch (err: any) {
-        setError(err.message || "Failed to load member details");
+        setError(err.message || "Failed to load user details");
       } finally {
         setLoading(false);
       }
     };
 
     if (params.id) {
-      fetchMember();
+      fetchUser();
     }
   }, [params.id]);
 
@@ -92,39 +95,39 @@ export default function MemberDetailPage() {
     );
   }
 
-  if (error || !member) {
+  if (error || !user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <AlertCircle className="h-12 w-12 text-red-500" />
-        <p className="text-lg text-muted-foreground">{error || "Member not found"}</p>
-        <Link href="/admin/members">
-          <Button variant="outline">Back to Members</Button>
+        <p className="text-lg text-muted-foreground">{error || "User not found"}</p>
+        <Link href="/dashboard/admin/users">
+          <Button variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Users
+          </Button>
         </Link>
       </div>
     );
   }
 
-  const progress = calculatePlanProgress(member.membershipStartDate, member.membershipEndDate);
-  const daysSinceJoin = calculateDaysSince(member.joinDate);
-  const attendanceRate = member.attendance?.length ?
-    (member.attendance.filter((a: any) => a.checkOut).length / member.attendance.length * 100).toFixed(0) : 0;
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/members">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
+    <div className="p-4 sm:p-8">
+      {/* Header */}
+      <div className="mb-6">
+        <Link href="/dashboard/admin/users">
+          <Button variant="ghost" size="sm" className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Users
           </Button>
         </Link>
         <PageHeader
-          title={member.user.name}
-          description={`Member ID: ${member.employeeId}`}
+          title="User Details"
+          description={`View and manage ${user.name}'s profile`}
           action={
-            <Link href={`/admin/members/${params.id}/edit`}>
+            <Link href={`/dashboard/admin/users/${user.id}/edit`}>
               <Button>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
+                <Edit className="mr-2 h-4 w-4" />
+                Edit User
               </Button>
             </Link>
           }
@@ -132,355 +135,342 @@ export default function MemberDetailPage() {
       </div>
 
       {/* Profile Overview */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-1">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <Avatar className="h-32 w-32">
-                <AvatarImage src={member.user.profileImage || "/placeholder.svg"} />
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Avatar */}
+            <div className="shrink-0">
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={user.profileImage || undefined} alt={user.name} />
                 <AvatarFallback className="text-3xl">
-                  {member.user.name.split(' ').map((n: string) => n[0]).join('')}
+                  {user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 space-y-4">
               <div>
-                <h3 className="text-2xl font-bold">{member.user.name}</h3>
-                <p className="text-muted-foreground">{member.employeeId}</p>
-              </div>
-              <Badge className={getStatusColor(member.user.isActive)}>
-                {member.user.isActive ? "Active" : "Inactive"}
-              </Badge>
-            </div>
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center gap-3 text-sm">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="truncate">{member.user.email}</span>
-              </div>
-              {member.user.phone && (
-                <div className="flex items-center gap-3 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{member.user.phone}</span>
+                <h2 className="text-2xl font-bold">{user.name}</h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge className={getRoleColor(user.role)}>
+                    {user.role.replace('_', ' ')}
+                  </Badge>
+                  <Badge className={user.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                    {user.isActive ? (
+                      <>
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Active
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-3 w-3 mr-1" />
+                        Inactive
+                      </>
+                    )}
+                  </Badge>
+                  {user.isVerified && (
+                    <Badge className="bg-blue-100 text-blue-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  )}
                 </div>
-              )}
-              <div className="flex items-center gap-3 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Joined {formatDate(member.joinDate)}</span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <div className="md:col-span-2 space-y-6">
-          {/* Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <CreditCard className="h-8 w-8 mx-auto mb-2 text-primary" />
-                  <p className="text-2xl font-bold">{member.currentPlan?.name || "No Plan"}</p>
-                  <p className="text-sm text-muted-foreground">Membership Plan</p>
+              {/* Contact Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 text-gray-500" />
+                  <span>{user.email}</span>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <TrendingUp className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                  <p className="text-2xl font-bold">{attendanceRate}%</p>
-                  <p className="text-sm text-muted-foreground">Attendance Rate</p>
+                {user.phone && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-4 w-4 text-gray-500" />
+                    <span>{user.phone}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <span>Joined: {formatDate(user.createdAt)}</span>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <Activity className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-2xl font-bold">{daysSinceJoin}</p>
-                  <p className="text-sm text-muted-foreground">Days as Member</p>
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <span>Updated: {formatDate(user.updatedAt)}</span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Membership Status */}
-          {member.currentPlan && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Membership Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Plan Progress</span>
-                    <span className="text-sm text-muted-foreground">
-                      {member.membershipStartDate && member.membershipEndDate
-                        ? `${formatDate(member.membershipStartDate)} - ${formatDate(member.membershipEndDate)}`
-                        : "N/A"}
-                    </span>
-                  </div>
-                  <Progress value={progress} />
-                </div>
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Plan</p>
-                    <p className="font-semibold">{member.currentPlan.name}</p>
-                    <p className="text-sm text-green-600">${member.currentPlan.price}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Assigned Trainer</p>
-                    <p className="font-semibold">
-                      {member.assignedTrainer?.user.name || "Not Assigned"}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
-
-      {/* Detailed Information */}
-      <Tabs defaultValue="details" className="space-y-6">
+      {/* Role-Specific Information */}
+      <Tabs defaultValue="details" className="space-y-4">
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="fitness">Fitness Profile</TabsTrigger>
-          <TabsTrigger value="payments">Payments ({member.payments?.length || 0})</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance ({member.attendance?.length || 0})</TabsTrigger>
+          {user.member && <TabsTrigger value="member">Member Info</TabsTrigger>}
+          {user.trainer && <TabsTrigger value="trainer">Trainer Info</TabsTrigger>}
+          {user.admin && <TabsTrigger value="admin">Admin Info</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="details" className="space-y-6">
+        {/* General Details Tab */}
+        <TabsContent value="details">
           <Card>
             <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
+              <CardTitle>Account Information</CardTitle>
+              <CardDescription>Basic account details and status</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Full Name</p>
-                  <p className="font-medium">{member.user.name}</p>
+                  <label className="text-sm font-medium text-gray-500">User ID</label>
+                  <p className="text-sm font-mono">{user.id}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Date of Birth</p>
-                  <p className="font-medium">{formatDate(member.dateOfBirth)}</p>
+                  <label className="text-sm font-medium text-gray-500">Role</label>
+                  <p className="text-sm">{user.role.replace('_', ' ')}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Email</p>
-                  <p className="font-medium">{member.user.email}</p>
+                  <label className="text-sm font-medium text-gray-500">Email Verified</label>
+                  <p className="text-sm">{user.isVerified ? "Yes" : "No"}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Phone</p>
-                  <p className="font-medium">{member.user.phone || "N/A"}</p>
+                  <label className="text-sm font-medium text-gray-500">Account Status</label>
+                  <p className="text-sm">{user.isActive ? "Active" : "Inactive"}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Gender</p>
-                  <p className="font-medium capitalize">{member.gender?.toLowerCase() || "N/A"}</p>
+                  <label className="text-sm font-medium text-gray-500">Created At</label>
+                  <p className="text-sm">{formatDateTime(user.createdAt)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Blood Group</p>
-                  <p className="font-medium">{member.bloodGroup || "N/A"}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground mb-1">Address</p>
-                  <p className="font-medium">{member.address || "N/A"}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Emergency Contact</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Contact Name</p>
-                  <p className="font-medium">{member.emergencyContactName || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Contact Phone</p>
-                  <p className="font-medium">{member.emergencyContact || "N/A"}</p>
+                  <label className="text-sm font-medium text-gray-500">Last Updated</label>
+                  <p className="text-sm">{formatDateTime(user.updatedAt)}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="fitness" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Body Metrics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-3">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Height</p>
-                  <p className="text-2xl font-bold">{member.height ? `${member.height} cm` : "N/A"}</p>
+        {/* Member Info Tab */}
+        {user.member && (
+          <TabsContent value="member">
+            <Card>
+              <CardHeader>
+                <CardTitle>Member Information</CardTitle>
+                <CardDescription>Membership details and fitness profile</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Member ID</label>
+                    <p className="text-sm font-mono">{user.member.membershipId}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Current Plan</label>
+                    <p className="text-sm">
+                      {user.member.currentPlan ? (
+                        <>
+                          {user.member.currentPlan.name} - ${user.member.currentPlan.price}
+                        </>
+                      ) : (
+                        "No active plan"
+                      )}
+                    </p>
+                  </div>
+                  {user.member.planStartDate && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Plan Start Date</label>
+                      <p className="text-sm">{formatDate(user.member.planStartDate)}</p>
+                    </div>
+                  )}
+                  {user.member.planEndDate && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Plan End Date</label>
+                      <p className="text-sm">{formatDate(user.member.planEndDate)}</p>
+                    </div>
+                  )}
+                  {user.member.dateOfBirth && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Date of Birth</label>
+                      <p className="text-sm">{formatDate(user.member.dateOfBirth)}</p>
+                    </div>
+                  )}
+                  {user.member.gender && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Gender</label>
+                      <p className="text-sm">{user.member.gender}</p>
+                    </div>
+                  )}
+                  {user.member.workoutExperience && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Experience Level</label>
+                      <p className="text-sm">{user.member.workoutExperience}</p>
+                    </div>
+                  )}
+                  {user.member.height && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Height</label>
+                      <p className="text-sm">{user.member.height} cm</p>
+                    </div>
+                  )}
+                  {user.member.weight && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Weight</label>
+                      <p className="text-sm">{user.member.weight} kg</p>
+                    </div>
+                  )}
+                  {user.member.assignedTrainer && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Assigned Trainer</label>
+                      <p className="text-sm">{user.member.assignedTrainer.user.name}</p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Current Weight</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {member.currentWeight ? `${member.currentWeight} kg` : "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Target Weight</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {member.targetWeight ? `${member.targetWeight} kg` : "N/A"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Fitness Profile</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Workout Experience</p>
-                  <Badge variant="outline" className="capitalize">
-                    {member.workoutExperience?.toLowerCase() || "Not Set"}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Weekly Frequency</p>
-                  <p className="font-medium">{member.weeklyFrequency || 0} days/week</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Preferred Time</p>
-                  <p className="font-medium capitalize">{member.preferredTime?.toLowerCase() || "Not Set"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Fitness Goals</p>
-                  <div className="flex flex-wrap gap-2">
-                    {member.fitnessGoals && member.fitnessGoals.length > 0 ? (
-                      member.fitnessGoals.map((goal: string, idx: number) => (
-                        <Badge key={idx} variant="secondary">{goal}</Badge>
-                      ))
-                    ) : (
-                      <p className="text-sm">No goals set</p>
+        {/* Trainer Info Tab */}
+        {user.trainer && (
+          <TabsContent value="trainer">
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Trainer Information</CardTitle>
+                  <CardDescription>Professional profile and expertise</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Trainer ID</label>
+                      <p className="text-sm font-mono">{user.trainer.membershipId}</p>
+                    </div>
+                    {user.trainer.rating && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Rating</label>
+                        <div className="flex items-center gap-1">
+                          <Award className="h-4 w-4 text-yellow-500" />
+                          <p className="text-sm">{user.trainer.rating.toFixed(1)} / 5.0</p>
+                        </div>
+                      </div>
                     )}
-                  </div>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground mb-2">Preferred Workout Style</p>
-                  <div className="flex flex-wrap gap-2">
-                    {member.preferredWorkoutStyle && member.preferredWorkoutStyle.length > 0 ? (
-                      member.preferredWorkoutStyle.map((style: string, idx: number) => (
-                        <Badge key={idx} variant="outline">{style}</Badge>
-                      ))
-                    ) : (
-                      <p className="text-sm">Not specified</p>
+                    {user.trainer.experienceYears && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Experience</label>
+                        <p className="text-sm">{user.trainer.experienceYears} years</p>
+                      </div>
                     )}
-                  </div>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground mb-2">Health Conditions</p>
-                  <div className="flex flex-wrap gap-2">
-                    {member.healthConditions && member.healthConditions.length > 0 ? (
-                      member.healthConditions.map((condition: string, idx: number) => (
-                        <Badge key={idx} variant="destructive">{condition}</Badge>
-                      ))
-                    ) : (
-                      <p className="text-sm text-green-600">No conditions reported</p>
+                    {user.trainer.hourlyRate && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Hourly Rate</label>
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="h-4 w-4 text-green-500" />
+                          <p className="text-sm">${user.trainer.hourlyRate}/hour</p>
+                        </div>
+                      </div>
                     )}
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Availability</label>
+                      <p className="text-sm">
+                        {user.trainer.isAvailable ? "Available" : "Not Available"}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="payments">
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment History</CardTitle>
-              <CardDescription>All payment transactions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {member.payments && member.payments.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Invoice</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {member.payments.map((payment: any) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-medium">{payment.invoiceNumber}</TableCell>
-                        <TableCell>{formatDate(payment.paymentDate)}</TableCell>
-                        <TableCell className="text-green-600 font-semibold">
-                          ${payment.finalAmount}
-                          {payment.discount > 0 && (
-                            <span className="text-xs text-muted-foreground ml-1">
-                              (-${payment.discount})
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="capitalize">{payment.paymentMethod.toLowerCase()}</TableCell>
-                        <TableCell>
-                          <Badge className={payment.status === "COMPLETED" ? "bg-green-500/10 text-green-500" : ""}>
-                            {payment.status}
+                  {user.trainer.bio && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Bio</label>
+                      <p className="text-sm text-gray-700 mt-1">{user.trainer.bio}</p>
+                    </div>
+                  )}
+
+                  {user.trainer.specializations && user.trainer.specializations.length > 0 && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500 mb-2 block">
+                        Specializations
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {user.trainer.specializations.map((spec) => (
+                          <Badge key={spec.id} variant="outline">
+                            {spec.name}
+                            {spec.level && ` (${spec.level})`}
                           </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No payment history available
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-        <TabsContent value="attendance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Attendance History</CardTitle>
-              <CardDescription>Recent check-in records</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {member.attendance && member.attendance.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Check In</TableHead>
-                      <TableHead>Check Out</TableHead>
-                      <TableHead>Duration</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {member.attendance.slice(0, 10).map((record: any) => (
-                      <TableRow key={record.id}>
-                        <TableCell className="font-medium">{formatDate(record.date)}</TableCell>
-                        <TableCell>{new Date(record.checkIn).toLocaleTimeString()}</TableCell>
-                        <TableCell>
-                          {record.checkOut ? new Date(record.checkOut).toLocaleTimeString() : "N/A"}
-                        </TableCell>
-                        <TableCell>{calculateDuration(record.checkIn, record.checkOut)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No attendance records available
-                </div>
+              {user.trainer.availability && user.trainer.availability.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Schedule Availability</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {user.trainer.availability.map((schedule) => (
+                        <div
+                          key={schedule.id}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            <span className="font-medium">{schedule.dayOfWeek}</span>
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            {schedule.startTime} - {schedule.endTime}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </TabsContent>
+        )}
+
+        {/* Admin Info Tab */}
+        {user.admin && (
+          <TabsContent value="admin">
+            <Card>
+              <CardHeader>
+                <CardTitle>Admin Information</CardTitle>
+                <CardDescription>Administrative access and permissions</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Admin ID</label>
+                    <p className="text-sm font-mono">{user.admin.id}</p>
+                  </div>
+                  {user.admin.accessLevel && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Access Level</label>
+                      <p className="text-sm">{user.admin.accessLevel}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">
+                        Administrative Privileges
+                      </p>
+                      <p className="text-sm text-blue-700 mt-1">
+                        This user has administrative access to the system. They can manage users,
+                        content, and system settings based on their access level.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { User, Mail, Phone, Calendar, MapPin, Heart, Activity, Target } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, Phone, Calendar, MapPin, Heart, Activity, Target, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,55 +9,65 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/shared/PageComponents";
 import Link from "next/link";
-
-interface MemberProfile {
-    name: string;
-    email: string;
-    phone: string;
-    profileImage?: string;
-    employeeId: string;
-    dateOfBirth?: string;
-    gender?: string;
-    height?: number;
-    currentWeight?: number;
-    targetWeight?: number;
-    bloodGroup?: string;
-    address?: string;
-    emergencyContact?: string;
-    emergencyContactName?: string;
-    fitnessGoals: string[];
-    healthConditions: string[];
-    workoutExperience: string;
-    preferredWorkoutStyle: string[];
-    weeklyFrequency: number;
-    joinDate: string;
-}
-
-const mockProfile: MemberProfile = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1 234 567 8900",
-    profileImage: "/placeholder-avatar.jpg",
-    employeeId: "MEM-001",
-    dateOfBirth: "1990-01-15",
-    gender: "Male",
-    height: 175,
-    currentWeight: 80,
-    targetWeight: 75,
-    bloodGroup: "O+",
-    address: "123 Main St, New York, NY 10001",
-    emergencyContact: "+1 234 567 8901",
-    emergencyContactName: "Jane Doe",
-    fitnessGoals: ["Weight Loss", "Muscle Gain", "Improve Endurance"],
-    healthConditions: [],
-    workoutExperience: "Intermediate",
-    preferredWorkoutStyle: ["Strength Training", "Cardio"],
-    weeklyFrequency: 4,
-    joinDate: "2024-01-15",
-};
+import { getUserInfo } from "@/services/auth/getUserInfo";
+import { UserInfo } from "@/types/userInfo";
 
 export default function ProfilePage() {
-    const [profile] = useState<MemberProfile>(mockProfile);
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch user info from /auth/me
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await getUserInfo();
+
+                if (!data) {
+                    setError("Failed to load user information");
+                    return;
+                }
+
+                setUserInfo(data);
+            } catch (err: any) {
+                console.error("Error fetching user info:", err);
+                setError(err.message || "Failed to load profile");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserInfo();
+    }, []);
+
+    // Show loading state
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center space-y-4">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                    <p className="text-muted-foreground">Loading profile...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show error state
+    if (error || !userInfo) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center space-y-4">
+                    <p className="text-red-600 font-semibold">Failed to load profile</p>
+                    <p className="text-muted-foreground">{error || "User not found"}</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Extract member data
+    const member = userInfo.member;
 
     return (
         <div className="space-y-6">
@@ -71,34 +81,47 @@ export default function ProfilePage() {
                 <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                         <Avatar className="h-24 w-24 md:h-32 md:w-32">
-                            <AvatarImage src={profile.profileImage} alt={profile.name} />
+                            <AvatarImage src={userInfo.profileImage || ""} alt={userInfo.name} />
                             <AvatarFallback className="text-2xl">
-                                {profile.name.split(" ").map((n) => n[0]).join("")}
+                                {userInfo.name.split(" ").map((n: string) => n[0]).join("")}
                             </AvatarFallback>
                         </Avatar>
 
                         <div className="flex-1 text-center md:text-left space-y-4">
                             <div>
-                                <h2 className="text-2xl font-bold">{profile.name}</h2>
-                                <p className="text-muted-foreground">Member ID: {profile.employeeId}</p>
+                                <h2 className="text-2xl font-bold">{userInfo.name}</h2>
+                                <p className="text-muted-foreground">Member ID: {member?.employeeId || userInfo.id}</p>
+                                <div className="flex gap-2 mt-2 justify-center md:justify-start">
+                                    <Badge variant={userInfo.isActive ? "default" : "destructive"}>
+                                        {userInfo.isActive ? "Active" : "Inactive"}
+                                    </Badge>
+                                    <Badge variant={userInfo.isVerified ? "default" : "secondary"}>
+                                        {userInfo.isVerified ? "Verified" : "Unverified"}
+                                    </Badge>
+                                    <Badge variant="outline">{userInfo.role}</Badge>
+                                </div>
                             </div>
 
                             <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                                {profile.fitnessGoals.map((goal) => (
-                                    <Badge key={goal} variant="secondary">
-                                        {goal}
-                                    </Badge>
-                                ))}
+                                {member?.fitnessGoals && member.fitnessGoals.length > 0 ? (
+                                    member.fitnessGoals.map((goal: string) => (
+                                        <Badge key={goal} variant="secondary">
+                                            {goal}
+                                        </Badge>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No fitness goals set</p>
+                                )}
                             </div>
 
                             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground justify-center md:justify-start">
                                 <div className="flex items-center gap-1">
                                     <Calendar className="h-4 w-4" />
-                                    Joined {new Date(profile.joinDate).toLocaleDateString()}
+                                    Joined {member?.joinDate ? new Date(member.joinDate).toLocaleDateString() : "N/A"}
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <Activity className="h-4 w-4" />
-                                    {profile.workoutExperience}
+                                    {member?.workoutExperience || "Not specified"}
                                 </div>
                             </div>
 
@@ -131,7 +154,7 @@ export default function ProfilePage() {
                                     <p className="text-sm text-muted-foreground">Email</p>
                                     <div className="flex items-center gap-2">
                                         <Mail className="h-4 w-4 text-muted-foreground" />
-                                        <p className="font-medium">{profile.email}</p>
+                                        <p className="font-medium">{userInfo.email}</p>
                                     </div>
                                 </div>
 
@@ -139,34 +162,34 @@ export default function ProfilePage() {
                                     <p className="text-sm text-muted-foreground">Phone</p>
                                     <div className="flex items-center gap-2">
                                         <Phone className="h-4 w-4 text-muted-foreground" />
-                                        <p className="font-medium">{profile.phone}</p>
+                                        <p className="font-medium">{userInfo.phone || "Not provided"}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Date of Birth</p>
                                     <p className="font-medium">
-                                        {profile.dateOfBirth
-                                            ? new Date(profile.dateOfBirth).toLocaleDateString()
+                                        {member?.dateOfBirth
+                                            ? new Date(member.dateOfBirth).toLocaleDateString()
                                             : "Not provided"}
                                     </p>
                                 </div>
 
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Gender</p>
-                                    <p className="font-medium">{profile.gender || "Not provided"}</p>
+                                    <p className="font-medium">{member?.gender || "Not provided"}</p>
                                 </div>
 
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Blood Group</p>
-                                    <p className="font-medium">{profile.bloodGroup || "Not provided"}</p>
+                                    <p className="font-medium">{member?.bloodGroup || "Not provided"}</p>
                                 </div>
 
                                 <div className="space-y-1 md:col-span-2">
                                     <p className="text-sm text-muted-foreground">Address</p>
                                     <div className="flex items-start gap-2">
                                         <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                        <p className="font-medium">{profile.address || "Not provided"}</p>
+                                        <p className="font-medium">{member?.address || "Not provided"}</p>
                                     </div>
                                 </div>
                             </div>
@@ -185,59 +208,67 @@ export default function ProfilePage() {
                             <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Height</p>
-                                    <p className="font-medium">{profile.height ? `${profile.height} cm` : "Not provided"}</p>
+                                    <p className="font-medium">{member?.height ? `${member.height} cm` : "Not provided"}</p>
                                 </div>
 
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Current Weight</p>
-                                    <p className="font-medium">{profile.currentWeight ? `${profile.currentWeight} kg` : "Not provided"}</p>
+                                    <p className="font-medium">{member?.currentWeight ? `${member.currentWeight} kg` : "Not provided"}</p>
                                 </div>
 
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Target Weight</p>
                                     <div className="flex items-center gap-2">
                                         <Target className="h-4 w-4 text-primary" />
-                                        <p className="font-medium">{profile.targetWeight ? `${profile.targetWeight} kg` : "Not set"}</p>
+                                        <p className="font-medium">{member?.targetWeight ? `${member.targetWeight} kg` : "Not set"}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Workout Experience</p>
-                                    <Badge variant="outline">{profile.workoutExperience}</Badge>
+                                    <Badge variant="outline">{member?.workoutExperience || "Not specified"}</Badge>
                                 </div>
 
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Weekly Frequency</p>
-                                    <p className="font-medium">{profile.weeklyFrequency} times per week</p>
+                                    <p className="font-medium">{member?.weeklyFrequency || 0} times per week</p>
                                 </div>
 
                                 <div className="space-y-1 md:col-span-2">
                                     <p className="text-sm text-muted-foreground">Fitness Goals</p>
                                     <div className="flex flex-wrap gap-2 mt-2">
-                                        {profile.fitnessGoals.map((goal) => (
-                                            <Badge key={goal} className="bg-primary/10 text-primary hover:bg-primary/20">
-                                                {goal}
-                                            </Badge>
-                                        ))}
+                                        {member?.fitnessGoals && member.fitnessGoals.length > 0 ? (
+                                            member.fitnessGoals.map((goal: string) => (
+                                                <Badge key={goal} className="bg-primary/10 text-primary hover:bg-primary/20">
+                                                    {goal}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">No fitness goals set</p>
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="space-y-1 md:col-span-2">
                                     <p className="text-sm text-muted-foreground">Preferred Workout Styles</p>
                                     <div className="flex flex-wrap gap-2 mt-2">
-                                        {profile.preferredWorkoutStyle.map((style) => (
-                                            <Badge key={style} variant="secondary">
-                                                {style}
-                                            </Badge>
-                                        ))}
+                                        {member?.preferredWorkoutStyle && member.preferredWorkoutStyle.length > 0 ? (
+                                            member.preferredWorkoutStyle.map((style: string) => (
+                                                <Badge key={style} variant="secondary">
+                                                    {style}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">No workout styles set</p>
+                                        )}
                                     </div>
                                 </div>
 
-                                {profile.healthConditions.length > 0 && (
+                                {member?.healthConditions && member.healthConditions.length > 0 && (
                                     <div className="space-y-1 md:col-span-2">
                                         <p className="text-sm text-muted-foreground">Health Conditions</p>
                                         <div className="flex flex-wrap gap-2 mt-2">
-                                            {profile.healthConditions.map((condition) => (
+                                            {member.healthConditions.map((condition: string) => (
                                                 <Badge key={condition} variant="destructive">
                                                     {condition}
                                                 </Badge>
@@ -263,7 +294,7 @@ export default function ProfilePage() {
                                     <p className="text-sm text-muted-foreground">Contact Name</p>
                                     <div className="flex items-center gap-2">
                                         <User className="h-4 w-4 text-muted-foreground" />
-                                        <p className="font-medium">{profile.emergencyContactName || "Not provided"}</p>
+                                        <p className="font-medium">{member?.emergencyContactName || "Not provided"}</p>
                                     </div>
                                 </div>
 
@@ -271,7 +302,7 @@ export default function ProfilePage() {
                                     <p className="text-sm text-muted-foreground">Contact Number</p>
                                     <div className="flex items-center gap-2">
                                         <Phone className="h-4 w-4 text-muted-foreground" />
-                                        <p className="font-medium">{profile.emergencyContact || "Not provided"}</p>
+                                        <p className="font-medium">{member?.emergencyContact || "Not provided"}</p>
                                     </div>
                                 </div>
                             </div>

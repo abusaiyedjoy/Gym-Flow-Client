@@ -189,16 +189,6 @@ export const navigationConfig: Record<string, NavItem[]> = {
         { label: 'Trainers', href: '/dashboard/admin/reports/trainers', icon: Dumbbell },
       ],
     },
-    {
-      label: 'Settings',
-      href: '/dashboard/admin/settings',
-      icon: Settings,
-      children: [
-        { label: 'General', href: '/dashboard/admin/settings', icon: Settings },
-        { label: 'System', href: '/dashboard/admin/settings/system', icon: Database },
-        { label: 'Users', href: '/dashboard/admin/settings/users', icon: Users },
-      ],
-    },
   ],
 
   // Trainer Navigation
@@ -246,11 +236,6 @@ export const navigationConfig: Record<string, NavItem[]> = {
       label: 'Profile',
       href: '/dashboard/trainer/profile',
       icon: Users,
-    },
-    {
-      label: 'Settings',
-      href: '/dashboard/trainer/settings',
-      icon: Settings,
     },
   ],
 
@@ -310,11 +295,6 @@ export const navigationConfig: Record<string, NavItem[]> = {
       label: 'Profile',
       href: '/dashboard/member/profile',
       icon: Users,
-    },
-    {
-      label: 'Settings',
-      href: '/dashboard/member/settings',
-      icon: Settings,
     },
   ],
 };

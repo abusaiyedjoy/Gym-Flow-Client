@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
     Users,
     Dumbbell,
@@ -9,6 +10,10 @@ import {
     Activity,
     UserPlus,
     CreditCard,
+    UserCheck,
+    UserX,
+    Shield,
+    Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/PageComponents";
@@ -31,8 +36,14 @@ import {
     AreaChart,
 } from "recharts";
 import { Progress } from "@/components/ui/progress";
+import { UserService } from "@/services/user/user.service";
+import { MemberService } from "@/services/member/member.service";
+import { TrainerService } from "@/services/trainer/trainer.service";
+import { UserStats } from "@/types/user.types";
+import { MemberStatsResponse } from "@/types/member.types";
+import { TrainerStats } from "@/types/trainer.types";
 
-// Mock data for charts
+// Mock data for charts (keeping these static as requested)
 const revenueData = [
     { month: "Jan", revenue: 45000, expenses: 28000, profit: 17000 },
     { month: "Feb", revenue: 52000, expenses: 30000, profit: 22000 },
@@ -112,45 +123,147 @@ const recentActivities: RecentActivity[] = [
 ];
 
 export default function AdminDashboardPage() {
+    // State for API data
+    const [userStats, setUserStats] = useState<UserStats | null>(null);
+    const [memberStats, setMemberStats] = useState<MemberStatsResponse | null>(null);
+    const [trainerStats, setTrainerStats] = useState<TrainerStats | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
+    // Fetch all stats on component mount
+    useEffect(() => {
+        const fetchAllStats = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const [users, members, trainers] = await Promise.allSettled([
+                    UserService.getUserStats(),
+                    MemberService.getMemberStats(),
+                    TrainerService.getTrainerStats(),
+                ]);
+
+                if (users.status === "fulfilled") {
+                    setUserStats(users.value);
+                }
+
+                if (members.status === "fulfilled") {
+                    setMemberStats(members.value);
+                }
+
+                if (trainers.status === "fulfilled") {
+                    // TrainerService returns ApiResponse<TrainerStatsResponse>
+                    // TrainerStatsResponse extends ApiResponse<TrainerStats>
+                    // So we need to access trainers.value.data.data
+                    const trainerResponse = trainers.value as any;
+                    setTrainerStats(trainerResponse.data);
+                }
+            } catch (err: any) {
+                console.error("Failed to fetch stats:", err);
+                setError(err.message || "Failed to load dashboard data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAllStats();
+    }, []);
+
+    // Calculate dynamic stats from API data
     const stats = [
         {
-            title: "Total Members",
-            value: "378",
-            change: "+12.5%",
+            title: "Total Users",
+            value: userStats?.totalUsers.toString() || "0",
+            change: userStats?.recentUsers ? `+${userStats.recentUsers} this week` : "Loading...",
             trend: "up",
             icon: Users,
             color: "text-blue-600",
             bgColor: "bg-blue-600/10",
         },
         {
+            title: "Active Members",
+            value: memberStats?.activeMembers.toString() || "0",
+            change: memberStats?.newMembersThisMonth ? `+${memberStats.newMembersThisMonth} this month` : "Loading...",
+            trend: "up",
+            icon: UserCheck,
+            color: "text-green-600",
+            bgColor: "bg-green-600/10",
+        },
+        {
             title: "Active Trainers",
-            value: "18",
-            change: "+2",
+            value: trainerStats?.activeTrainers.toString() || "0",
+            change: trainerStats ? `${trainerStats.availableTrainers} available` : "Loading...",
             trend: "up",
             icon: Dumbbell,
             color: "text-primary",
             bgColor: "bg-primary/10",
         },
         {
-            title: "Monthly Revenue",
-            value: "$67,000",
-            change: "+15.3%",
-            trend: "up",
-            icon: DollarSign,
-            color: "text-green-600",
-            bgColor: "bg-green-600/10",
-        },
-        {
-            title: "Avg Attendance",
-            value: "159/day",
-            change: "+8.2%",
-            trend: "up",
-            icon: Calendar,
+            title: "Total Admins",
+            value: userStats?.admins.toString() || "0",
+            change: "System administrators",
+            trend: "neutral",
+            icon: Shield,
             color: "text-orange-600",
             bgColor: "bg-orange-600/10",
         },
     ];
+
+    // Calculate membership distribution from member stats
+    const membershipDistributionData = memberStats ? [
+        {
+            name: "With Plan",
+            value: memberStats.membersWithPlan,
+            color: "#3b82f6"
+        },
+        {
+            name: "Without Plan",
+            value: memberStats.membersWithoutPlan,
+            color: "#ef4444"
+        },
+    ] : membershipDistribution;
+
+    // Calculate member growth data from stats
+    const memberGrowthDataCalculated = [
+        {
+            month: "Current",
+            members: memberStats?.totalMembers || 0,
+            trainers: trainerStats?.totalTrainers || 0
+        },
+    ];
+
+    // Calculate user role distribution
+    const usersByRoleData = userStats?.usersByRole.map(item => ({
+        name: item.role.replace('_', ' '),
+        value: item.count,
+        color: item.role === 'SUPER_ADMIN' ? '#8b5cf6' :
+            item.role === 'ADMIN' ? '#3b82f6' :
+                item.role === 'TRAINER' ? '#10b981' : '#f59e0b'
+    })) || [];
+
+    // Show loading state
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center space-y-4">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                    <p className="text-muted-foreground">Loading dashboard data...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show error state
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center space-y-4">
+                    <p className="text-red-600 font-semibold">Failed to load dashboard</p>
+                    <p className="text-muted-foreground">{error}</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -169,7 +282,7 @@ export default function AdminDashboardPage() {
                                     <p className="text-sm text-muted-foreground">{stat.title}</p>
                                     <p className="text-3xl font-bold">{stat.value}</p>
                                     <div className="flex items-center gap-1">
-                                        <TrendingUp className="h-4 w-4 text-green-600" />
+                                        {stat.trend === "up" && <TrendingUp className="h-4 w-4 text-green-600" />}
                                         <span className="text-sm text-green-600">{stat.change}</span>
                                     </div>
                                 </div>
@@ -193,82 +306,220 @@ export default function AdminDashboardPage() {
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="space-y-6">
                     <div className="grid gap-6 md:grid-cols-2">
-                        {/* Revenue Chart */}
+                        {/* User Statistics Summary */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Revenue Overview</CardTitle>
-                                <CardDescription>Monthly revenue, expenses, and profit</CardDescription>
+                                <CardTitle>User Overview</CardTitle>
+                                <CardDescription>Current system users breakdown</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <AreaChart data={revenueData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="month" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="revenue"
-                                            stackId="1"
-                                            stroke="#ef4444"
-                                            fill="#ef4444"
-                                            fillOpacity={0.6}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="profit"
-                                            stackId="2"
-                                            stroke="#10b981"
-                                            fill="#10b981"
-                                            fillOpacity={0.6}
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="h-4 w-4 text-blue-600" />
+                                            <span className="text-sm">Total Users</span>
+                                        </div>
+                                        <span className="text-lg font-bold">{userStats?.totalUsers || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <UserCheck className="h-4 w-4 text-green-600" />
+                                            <span className="text-sm">Active Users</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-green-600">{userStats?.activeUsers || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <UserX className="h-4 w-4 text-red-600" />
+                                            <span className="text-sm">Inactive Users</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-red-600">{userStats?.inactiveUsers || 0}</span>
+                                    </div>
+                                </div>
+                                <div className="pt-4 border-t space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-muted-foreground">Members</span>
+                                        <div className="flex gap-2 items-center">
+                                            <span className="text-sm text-green-600">{userStats?.members.active || 0} active</span>
+                                            <span className="text-sm text-muted-foreground">/</span>
+                                            <span className="text-sm font-semibold">{userStats?.members.total || 0}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-muted-foreground">Trainers</span>
+                                        <div className="flex gap-2 items-center">
+                                            <span className="text-sm text-green-600">{userStats?.trainers.active || 0} active</span>
+                                            <span className="text-sm text-muted-foreground">/</span>
+                                            <span className="text-sm font-semibold">{userStats?.trainers.total || 0}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-muted-foreground">Admins</span>
+                                        <span className="text-sm font-semibold">{userStats?.admins || 0}</span>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
 
-                        {/* Membership Distribution */}
+                        {/* User Roles Distribution */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Membership Distribution</CardTitle>
-                                <CardDescription>Members by plan type</CardDescription>
+                                <CardTitle>User Roles Distribution</CardTitle>
+                                <CardDescription>Users by role type</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
-                                        <Pie
-                                            data={membershipDistribution}
-                                            cx="50%"
-                                            cy="50%"
-                                            labelLine={false}
-                                            label={({ name, percent }) =>
-                                                `${name} ${((percent || 0) * 100).toFixed(0)}%`
-                                            }
-                                            outerRadius={80}
-                                            fill="#8884d8"
-                                            dataKey="value"
-                                        >
-                                            {membershipDistribution.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                {usersByRoleData.length > 0 ? (
+                                    <>
+                                        <ResponsiveContainer width="100%" height={250}>
+                                            <PieChart>
+                                                <Pie
+                                                    data={usersByRoleData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    labelLine={false}
+                                                    label={({ name, percent }) =>
+                                                        `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                                                    }
+                                                    outerRadius={80}
+                                                    fill="#8884d8"
+                                                    dataKey="value"
+                                                >
+                                                    {usersByRoleData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className="mt-4 space-y-2">
+                                            {usersByRoleData.map((item) => (
+                                                <div key={item.name} className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            className="h-3 w-3 rounded-full"
+                                                            style={{ backgroundColor: item.color }}
+                                                        />
+                                                        <span className="text-sm">{item.name}</span>
+                                                    </div>
+                                                    <span className="text-sm font-semibold">{item.value} users</span>
+                                                </div>
                                             ))}
-                                        </Pie>
-                                        <Tooltip />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className="mt-4 space-y-2">
-                                    {membershipDistribution?.map((item) => (
-                                        <div key={item.name} className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                    className="h-3 w-3 rounded-full"
-                                                    style={{ backgroundColor: item.color }}
-                                                />
-                                                <span className="text-sm">{item.name}</span>
-                                            </div>
-                                            <span className="text-sm font-semibold">{item.value} members</span>
                                         </div>
-                                    ))}
+                                    </>
+                                ) : (
+                                    <p className="text-center text-muted-foreground py-8">No data available</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Membership Plan Distribution */}
+                    <div className="grid gap-6 md:grid-cols-2 mt-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Membership Status</CardTitle>
+                                <CardDescription>Members with and without active plans</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {memberStats ? (
+                                    <>
+                                        <ResponsiveContainer width="100%" height={250}>
+                                            <PieChart>
+                                                <Pie
+                                                    data={membershipDistributionData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    labelLine={false}
+                                                    label={({ name, percent }) =>
+                                                        `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                                                    }
+                                                    outerRadius={80}
+                                                    fill="#8884d8"
+                                                    dataKey="value"
+                                                >
+                                                    {membershipDistributionData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className="mt-4 space-y-2">
+                                            {membershipDistributionData.map((item) => (
+                                                <div key={item.name} className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            className="h-3 w-3 rounded-full"
+                                                            style={{ backgroundColor: item.color }}
+                                                        />
+                                                        <span className="text-sm">{item.name}</span>
+                                                    </div>
+                                                    <span className="text-sm font-semibold">{item.value} members</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-center text-muted-foreground py-8">No data available</p>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Quick Stats</CardTitle>
+                                <CardDescription>Key performance indicators</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-3">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium">Active Members</span>
+                                            <span className="text-sm font-semibold">
+                                                {memberStats?.activeMembers || 0} / {memberStats?.totalMembers || 0}
+                                            </span>
+                                        </div>
+                                        <Progress
+                                            value={memberStats ? (memberStats.activeMembers / memberStats.totalMembers) * 100 : 0}
+                                            className="h-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium">Members with Plans</span>
+                                            <span className="text-sm font-semibold">
+                                                {memberStats?.membersWithPlan || 0} / {memberStats?.totalMembers || 0}
+                                            </span>
+                                        </div>
+                                        <Progress
+                                            value={memberStats ? (memberStats.membersWithPlan / memberStats.totalMembers) * 100 : 0}
+                                            className="h-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium">Members with Trainers</span>
+                                            <span className="text-sm font-semibold">
+                                                {memberStats?.membersWithTrainer || 0} / {memberStats?.totalMembers || 0}
+                                            </span>
+                                        </div>
+                                        <Progress
+                                            value={memberStats ? (memberStats.membersWithTrainer / memberStats.totalMembers) * 100 : 0}
+                                            className="h-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium">Trainer Capacity</span>
+                                            <span className="text-sm font-semibold">
+                                                {trainerStats?.avgCapacityUsage || 0}%
+                                            </span>
+                                        </div>
+                                        <Progress
+                                            value={trainerStats?.avgCapacityUsage || 0}
+                                            className="h-2"
+                                        />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -391,37 +642,148 @@ export default function AdminDashboardPage() {
 
                 {/* Members Tab */}
                 <TabsContent value="members">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Member Growth</CardTitle>
-                            <CardDescription>6-month member and trainer growth trend</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ResponsiveContainer width="100%" height={400}>
-                                <LineChart data={memberGrowthData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="month" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="members"
-                                        stroke="#ef4444"
-                                        strokeWidth={3}
-                                        dot={{ r: 6 }}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="trainers"
-                                        stroke="#3b82f6"
-                                        strokeWidth={3}
-                                        dot={{ r: 6 }}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Member Statistics</CardTitle>
+                                <CardDescription>Detailed member breakdown</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-blue-50 rounded-lg">
+                                        <p className="text-sm text-muted-foreground">Total Members</p>
+                                        <p className="text-2xl font-bold text-blue-600">{memberStats?.totalMembers || 0}</p>
+                                    </div>
+                                    <div className="p-4 bg-green-50 rounded-lg">
+                                        <p className="text-sm text-muted-foreground">Active</p>
+                                        <p className="text-2xl font-bold text-green-600">{memberStats?.activeMembers || 0}</p>
+                                    </div>
+                                    <div className="p-4 bg-red-50 rounded-lg">
+                                        <p className="text-sm text-muted-foreground">Inactive</p>
+                                        <p className="text-2xl font-bold text-red-600">{memberStats?.inactiveMembers || 0}</p>
+                                    </div>
+                                    <div className="p-4 bg-purple-50 rounded-lg">
+                                        <p className="text-sm text-muted-foreground">New This Month</p>
+                                        <p className="text-2xl font-bold text-purple-600">{memberStats?.newMembersThisMonth || 0}</p>
+                                    </div>
+                                </div>
+                                <div className="pt-4 border-t space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm">With Trainer</span>
+                                        <span className="font-semibold">{memberStats?.membersWithTrainer || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm">Without Trainer</span>
+                                        <span className="font-semibold">{memberStats?.membersWithoutTrainer || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm">With Active Plan</span>
+                                        <span className="font-semibold text-green-600">{memberStats?.membersWithPlan || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm">Without Plan</span>
+                                        <span className="font-semibold text-red-600">{memberStats?.membersWithoutPlan || 0}</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Trainer Statistics</CardTitle>
+                                <CardDescription>Trainer performance overview</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-blue-50 rounded-lg">
+                                        <p className="text-sm text-muted-foreground">Total Trainers</p>
+                                        <p className="text-2xl font-bold text-blue-600">{trainerStats?.totalTrainers || 0}</p>
+                                    </div>
+                                    <div className="p-4 bg-green-50 rounded-lg">
+                                        <p className="text-sm text-muted-foreground">Active</p>
+                                        <p className="text-2xl font-bold text-green-600">{trainerStats?.activeTrainers || 0}</p>
+                                    </div>
+                                    <div className="p-4 bg-orange-50 rounded-lg">
+                                        <p className="text-sm text-muted-foreground">Available</p>
+                                        <p className="text-2xl font-bold text-orange-600">{trainerStats?.availableTrainers || 0}</p>
+                                    </div>
+                                    <div className="p-4 bg-purple-50 rounded-lg">
+                                        <p className="text-sm text-muted-foreground">Avg Capacity</p>
+                                        <p className="text-2xl font-bold text-purple-600">
+                                            {trainerStats?.avgCapacityUsage ? `${trainerStats.avgCapacityUsage}%` : "0%"}
+                                        </p>
+                                    </div>
+                                </div>
+                                {trainerStats?.topRatedTrainers && trainerStats.topRatedTrainers.length > 0 && (
+                                    <div className="pt-4 border-t">
+                                        <h4 className="font-semibold mb-3">Top Rated Trainers</h4>
+                                        <div className="space-y-2">
+                                            {trainerStats.topRatedTrainers.slice(0, 3).map((trainer) => (
+                                                <div key={trainer.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                                    <span className="text-sm">{trainer.user.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-semibold text-yellow-600">
+                                                            ⭐ {trainer.rating.toFixed(1)}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            ({trainer.reviewCount})
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Member Experience Distribution */}
+                    {memberStats?.membersByExperience && memberStats.membersByExperience.length > 0 && (
+                        <Card className="mt-6">
+                            <CardHeader>
+                                <CardTitle>Members by Experience Level</CardTitle>
+                                <CardDescription>Distribution of workout experience</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart data={memberStats.membersByExperience}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="experience" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Bar dataKey="count" fill="#ef4444" radius={[8, 8, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Trainer Specializations */}
+                    {trainerStats?.trainersBySpecialization && trainerStats.trainersBySpecialization.length > 0 && (
+                        <Card className="mt-6">
+                            <CardHeader>
+                                <CardTitle>Trainers by Specialization</CardTitle>
+                                <CardDescription>Expertise distribution</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {trainerStats.trainersBySpecialization.map((spec) => (
+                                        <div key={spec.specialization} className="space-y-1">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium">{spec.specialization}</span>
+                                                <span className="text-sm font-semibold">{spec.count} trainers</span>
+                                            </div>
+                                            <Progress
+                                                value={(spec.count / (trainerStats.totalTrainers || 1)) * 100}
+                                                className="h-2"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </TabsContent>
 
                 {/* Activity Tab */}

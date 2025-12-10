@@ -7,25 +7,28 @@ import {
     Users,
     UserCheck,
     UserX,
-    TrendingUp,
+    Shield,
     Edit,
     Trash2,
     Eye,
+    Ban,
+    CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader, StatsCard } from "@/components/shared/PageComponents";
 
-import { MemberService } from "@/services/member/member.service";
-import { Member, GetMembersParams, WorkoutExperience } from "@/types/member.types";
+import { UserService } from "@/services/user/user.service";
+import { User, GetUsersParams, Role } from "@/types/user.types";
 
-export default function MembersPage() {
-    const [members, setMembers] = useState<Member[]>([]);
+export default function UsersPage() {
+    const [users, setUsers] = useState<User[]>([]);
     const [stats, setStats] = useState<any>(null);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+    const [statusLoading, setStatusLoading] = useState<string | null>(null);
 
     const [pagination, setPagination] = useState({
         page: 1,
@@ -39,20 +42,18 @@ export default function MembersPage() {
     // Filters
     const [search, setSearch] = useState("");
     const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
-    const [workoutExperience, setWorkoutExperience] = useState<
-        WorkoutExperience | undefined
-    >(undefined);
+    const [role, setRole] = useState<Role | undefined>(undefined);
 
-    const fetchMembers = async (params?: GetMembersParams) => {
+    const fetchUsers = async (params?: GetUsersParams) => {
         try {
             setLoading(true);
             setError(null);
-            const response = await MemberService.getAllMembers(params);
+            const response = await UserService.getAllUsers(params);
 
-            setMembers(response.data);
+            setUsers(response.data);
             if (response.meta) setPagination(response.meta);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to fetch members");
+            setError(err instanceof Error ? err.message : "Failed to fetch users");
         } finally {
             setLoading(false);
         }
@@ -60,7 +61,7 @@ export default function MembersPage() {
 
     const fetchStats = async () => {
         try {
-            const res = await MemberService.getMemberStats();
+            const res = await UserService.getUserStats();
             setStats(res);
         } catch (error) {
             console.error("Stats error:", error);
@@ -68,12 +69,12 @@ export default function MembersPage() {
     };
 
     useEffect(() => {
-        fetchMembers({
+        fetchUsers({
             page: pagination.page,
             limit: pagination.limit,
             search: search || undefined,
             isActive,
-            workoutExperience,
+            role,
         });
 
         fetchStats();
@@ -81,45 +82,73 @@ export default function MembersPage() {
 
     const handleSearch = () => {
         setPagination((prev) => ({ ...prev, page: 1 }));
-        fetchMembers({
+        fetchUsers({
             page: 1,
             limit: pagination.limit,
             search: search || undefined,
             isActive,
-            workoutExperience,
+            role,
         });
     };
 
     const handleClearFilters = () => {
         setSearch("");
         setIsActive(undefined);
-        setWorkoutExperience(undefined);
+        setRole(undefined);
         setPagination((prev) => ({ ...prev, page: 1 }));
-        fetchMembers({ page: 1, limit: pagination.limit });
+        fetchUsers({ page: 1, limit: pagination.limit });
     };
 
-    const handleDelete = async (memberId: string, memberName: string) => {
-        if (!confirm(`Are you sure you want to delete member "${memberName}"?`)) {
+    const handleToggleStatus = async (userId: string, userName: string, currentStatus: boolean) => {
+        const action = currentStatus ? "deactivate" : "activate";
+        if (!confirm(`Are you sure you want to ${action} user "${userName}"?`)) {
             return;
         }
 
         try {
-            setDeleteLoading(memberId);
-            await MemberService.deleteMember(memberId);
+            setStatusLoading(userId);
+            await UserService.toggleUserStatus(userId, { isActive: !currentStatus });
 
             // Refresh the list
-            fetchMembers({
+            fetchUsers({
                 page: pagination.page,
                 limit: pagination.limit,
                 search: search || undefined,
                 isActive,
-                workoutExperience,
+                role,
             });
 
             // Refresh stats
             fetchStats();
         } catch (error: any) {
-            alert(error.message || "Failed to delete member");
+            alert(error.message || "Failed to toggle user status");
+        } finally {
+            setStatusLoading(null);
+        }
+    };
+
+    const handleDelete = async (userId: string, userName: string) => {
+        if (!confirm(`Are you sure you want to delete user "${userName}"?`)) {
+            return;
+        }
+
+        try {
+            setDeleteLoading(userId);
+            await UserService.deleteUser(userId);
+
+            // Refresh the list
+            fetchUsers({
+                page: pagination.page,
+                limit: pagination.limit,
+                search: search || undefined,
+                isActive,
+                role,
+            });
+
+            // Refresh stats
+            fetchStats();
+        } catch (error: any) {
+            alert(error.message || "Failed to delete user");
         } finally {
             setDeleteLoading(null);
         }
@@ -134,69 +163,59 @@ export default function MembersPage() {
         });
     };
 
-    const getMembershipStatus = (endDate?: string | null) => {
-        if (!endDate)
-            return { text: "No Plan", color: "bg-gray-100 text-gray-800" };
-
-        const end = new Date(endDate);
-        const now = new Date();
-        const daysLeft = Math.ceil(
-            (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        if (daysLeft < 0) return { text: "Expired", color: "bg-red-100 text-red-800" };
-        if (daysLeft <= 7)
-            return { text: `${daysLeft}d left`, color: "bg-yellow-100 text-yellow-800" };
-
-        return { text: "Active", color: "bg-green-100 text-green-800" };
+    const getRoleColor = (userRole: Role) => {
+        switch (userRole) {
+            case Role.SUPER_ADMIN:
+                return "bg-purple-100 text-purple-800";
+            case Role.ADMIN:
+                return "bg-blue-100 text-blue-800";
+            case Role.TRAINER:
+                return "bg-green-100 text-green-800";
+            case Role.MEMBER:
+                return "bg-gray-100 text-gray-800";
+            default:
+                return "bg-gray-100 text-gray-800";
+        }
     };
 
-    if (loading && members.length === 0) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    const getRoleBadge = (userRole: Role) => {
+        const displayRole = userRole.replace('_', ' ');
+        return <Badge className={getRoleColor(userRole)}>{displayRole}</Badge>;
+    };
 
     return (
-        <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
-            {/* Header */}
+        <div className="p-4 sm:p-8">
             <PageHeader
-                title="Members"
-                description="Manage your gym members and their memberships"
-                action={
-                    <Link className="cursor-pointer" href="/dashboard/admin/members/create">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Member
-                        </Button>
-                    </Link>
-                }
+                title="User Management"
+                description="Manage all system users, roles, and permissions"
             />
 
-            {/* Stats Cards */}
+            {/* Stats */}
             {stats && (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <StatsCard
-                        title="Total Members"
-                        value={stats.totalMembers}
+                        title="Total Users"
+                        value={stats.totalUsers}
                         icon={<Users className="h-4 w-4" />}
+                        description={`${stats.recentUsers} new this week`}
                     />
                     <StatsCard
-                        title="Active Members"
-                        value={stats.activeMembers}
+                        title="Active Users"
+                        value={stats.activeUsers}
                         icon={<UserCheck className="h-4 w-4" />}
+                        description={`${stats.members.active} active members`}
                     />
                     <StatsCard
-                        title="Inactive Members"
-                        value={stats.inactiveMembers}
-                        icon={<UserX className="h-4 w-4" />}
+                        title="Trainers"
+                        value={stats.trainers.total}
+                        icon={<Users className="h-4 w-4" />}
+                        description={`${stats.trainers.active} active`}
                     />
                     <StatsCard
-                        title="New This Month"
-                        value={stats.newThisMonth}
-                        icon={<TrendingUp className="h-4 w-4" />}
+                        title="Admins"
+                        value={stats.admins}
+                        icon={<Shield className="h-4 w-4" />}
+                        description="System administrators"
                     />
                 </div>
             )}
@@ -214,9 +233,29 @@ export default function MembersPage() {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            placeholder="Name, email, ID..."
+                            placeholder="Name, email, phone..."
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                         />
+                    </div>
+
+                    {/* Role Filter */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Role
+                        </label>
+                        <select
+                            value={role || ""}
+                            onChange={(e) =>
+                                setRole((e.target.value as Role) || undefined)
+                            }
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        >
+                            <option value="">All Roles</option>
+                            <option value={Role.SUPER_ADMIN}>Super Admin</option>
+                            <option value={Role.ADMIN}>Admin</option>
+                            <option value={Role.TRAINER}>Trainer</option>
+                            <option value={Role.MEMBER}>Member</option>
+                        </select>
                     </div>
 
                     {/* Status */}
@@ -236,27 +275,6 @@ export default function MembersPage() {
                             <option value="">All</option>
                             <option value="true">Active</option>
                             <option value="false">Inactive</option>
-                        </select>
-                    </div>
-
-                    {/* Experience */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Experience
-                        </label>
-                        <select
-                            value={workoutExperience || ""}
-                            onChange={(e) =>
-                                setWorkoutExperience(
-                                    (e.target.value as WorkoutExperience) || undefined
-                                )
-                            }
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                        >
-                            <option value="">All Levels</option>
-                            <option value="BEGINNER">Beginner</option>
-                            <option value="INTERMEDIATE">Intermediate</option>
-                            <option value="ADVANCED">Advanced</option>
                         </select>
                     </div>
 
@@ -283,16 +301,16 @@ export default function MembersPage() {
                 </div>
             )}
 
-            {/* Members Table */}
+            {/* Users Table */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 border-b">
                             <tr>
-                                <th className="px-6 py-3 text-left">Member</th>
+                                <th className="px-6 py-3 text-left">User</th>
                                 <th className="px-6 py-3 text-left">Contact</th>
-                                <th className="px-6 py-3 text-left">Plan</th>
-                                <th className="px-6 py-3 text-left">Trainer</th>
+                                <th className="px-6 py-3 text-left">Role</th>
+                                <th className="px-6 py-3 text-left">Additional Info</th>
                                 <th className="px-6 py-3 text-left">Status</th>
                                 <th className="px-6 py-3 text-left">Joined</th>
                                 <th className="px-6 py-3 text-left">Actions</th>
@@ -300,73 +318,98 @@ export default function MembersPage() {
                         </thead>
 
                         <tbody className="divide-y">
-                            {members.map((member) => {
-                                const status = getMembershipStatus(member.membershipEndDate);
-
+                            {users.map((user) => {
                                 return (
-                                    <tr key={member.id} className="hover:bg-gray-50">
+                                    <tr key={user.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                {member.user.profileImage ? (
+                                                {user.profileImage ? (
                                                     <img
-                                                        src={member.user.profileImage}
+                                                        src={user.profileImage}
+                                                        alt={user.name}
                                                         className="h-10 w-10 rounded-full object-cover"
                                                     />
                                                 ) : (
                                                     <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-                                                        {member.user.name.charAt(0)}
+                                                        {user.name.charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
 
                                                 <div>
                                                     <Link
-                                                        href={`/admin/members/${member.id}`}
+                                                        href={`/dashboard/admin/users/${user.id}`}
                                                         className="font-medium text-primary hover:underline"
                                                     >
-                                                        {member.user.name}
+                                                        {user.name}
                                                     </Link>
                                                     <div className="text-xs text-gray-500">
-                                                        {member.employeeId}
+                                                        {user.isVerified ? (
+                                                            <span className="text-green-600">✓ Verified</span>
+                                                        ) : (
+                                                            <span className="text-gray-500">Not verified</span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
 
                                         <td className="px-6 py-4">
-                                            <div>{member.user.email}</div>
-                                            <div className="text-gray-500">
-                                                {member.user.phone || "N/A"}
+                                            <div className="text-sm">{user.email}</div>
+                                            <div className="text-sm text-gray-500">
+                                                {user.phone || "N/A"}
                                             </div>
                                         </td>
 
                                         <td className="px-6 py-4">
-                                            <div>{member.currentPlan?.name || "No Plan"}</div>
-                                            {member.membershipEndDate && (
-                                                <div className="text-gray-500 text-xs">
-                                                    Expires: {formatDate(member.membershipEndDate)}
+                                            {getRoleBadge(user.role)}
+                                        </td>
+
+                                        <td className="px-6 py-4">
+                                            {user.member && user.member.currentPlan && (
+                                                <div className="text-sm">
+                                                    <div>Plan: {user.member.currentPlan.name}</div>
+                                                    <div className="text-xs text-gray-500">
+                                                        ID: {user.member.membershipId}
+                                                    </div>
                                                 </div>
                                             )}
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            {member.assignedTrainer ? (
-                                                member.assignedTrainer.user.name
-                                            ) : (
-                                                <span className="text-gray-500">Not assigned</span>
+                                            {user.trainer && (
+                                                <div className="text-sm">
+                                                    <div>Rating: {user.trainer.rating || "N/A"}</div>
+                                                    <div className="text-xs text-gray-500">
+                                                        ID: {user.trainer.membershipId}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {user.admin && (
+                                                <div className="text-sm text-purple-600">
+                                                    Admin Access
+                                                </div>
+                                            )}
+                                            {!user.member && !user.trainer && !user.admin && (
+                                                <span className="text-gray-500 text-sm">-</span>
                                             )}
                                         </td>
 
                                         <td className="px-6 py-4">
-                                            <Badge className={status.color}>{status.text}</Badge>
+                                            <Badge
+                                                className={
+                                                    user.isActive
+                                                        ? "bg-green-100 text-green-800"
+                                                        : "bg-red-100 text-red-800"
+                                                }
+                                            >
+                                                {user.isActive ? "Active" : "Inactive"}
+                                            </Badge>
                                         </td>
 
-                                        <td className="px-6 py-4">
-                                            {formatDate(member.joinDate)}
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {formatDate(user.createdAt)}
                                         </td>
 
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
-                                                <Link href={`/admin/members/${member.id}`}>
+                                                <Link href={`/dashboard/admin/users/${user.id}`}>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -375,11 +418,11 @@ export default function MembersPage() {
                                                         <Eye className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
-                                                <Link href={`/admin/members/${member.id}/edit`}>
+                                                <Link href={`/dashboard/admin/users/${user.id}/edit`}>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        title="Edit Member"
+                                                        title="Edit User"
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
@@ -387,11 +430,26 @@ export default function MembersPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    title="Delete Member"
-                                                    onClick={() => handleDelete(member.id, member.user.name)}
-                                                    disabled={deleteLoading === member.id}
+                                                    title={user.isActive ? "Deactivate" : "Activate"}
+                                                    onClick={() => handleToggleStatus(user.id, user.name, user.isActive)}
+                                                    disabled={statusLoading === user.id}
                                                 >
-                                                    {deleteLoading === member.id ? (
+                                                    {statusLoading === user.id ? (
+                                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                                    ) : user.isActive ? (
+                                                        <Ban className="h-4 w-4 text-orange-600" />
+                                                    ) : (
+                                                        <CheckCircle className="h-4 w-4 text-green-600" />
+                                                    )}
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    title="Delete User"
+                                                    onClick={() => handleDelete(user.id, user.name)}
+                                                    disabled={deleteLoading === user.id}
+                                                >
+                                                    {deleteLoading === user.id ? (
                                                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                                     ) : (
                                                         <Trash2 className="h-4 w-4 text-red-600" />

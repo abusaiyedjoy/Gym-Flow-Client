@@ -14,7 +14,17 @@ export const getUserInfo = async (): Promise<UserInfo | any> => {
         const accessToken = await getCookie("accessToken");
 
         if (!accessToken) {
-            console.log("No access token found in cookies");
+            // No token, no error - just not logged in
+            return null;
+        }
+
+        // Validate token format (JWT has 3 parts separated by dots)
+        if (!accessToken.includes('.') || accessToken.split('.').length !== 3) {
+            console.error("Invalid token format detected");
+            // Delete malformed cookie to prevent loop
+            const { deleteCookie } = await import("./tokenHandaler");
+            await deleteCookie("accessToken");
+            await deleteCookie("refreshToken");
             return null;
         }
 
@@ -24,9 +34,20 @@ export const getUserInfo = async (): Promise<UserInfo | any> => {
         let userInfoFromToken: any = null;
 
         try {
+            // Check if JWT_ACCESS_SECRET is available
+            const jwtSecret = process.env.JWT_ACCESS_SECRET;
+
+            if (!jwtSecret) {
+                console.error("JWT_ACCESS_SECRET is not defined in environment variables");
+                // Delete invalid cookie to prevent loop
+                const { deleteCookie } = await import("./tokenHandaler");
+                await deleteCookie("accessToken");
+                return null;
+            }
+
             const decoded = jwt.verify(
                 accessToken,
-                process.env.JWT_ACCESS_SECRET as string
+                jwtSecret
             ) as JwtPayload & { userId?: string };
 
             userInfoFromToken = {
@@ -37,9 +58,12 @@ export const getUserInfo = async (): Promise<UserInfo | any> => {
             };
 
             console.log("Token decoded successfully:", { id: userInfoFromToken.id, role: userInfoFromToken.role });
-        } catch (jwtError) {
-            console.error("JWT verification failed:", jwtError);
-            // Token is invalid, return null to trigger re-login
+        } catch (jwtError: any) {
+            console.error("JWT verification failed:", jwtError.message);
+            // Token is invalid, delete it to prevent infinite loop
+            const { deleteCookie } = await import("./tokenHandaler");
+            await deleteCookie("accessToken");
+            await deleteCookie("refreshToken");
             return null;
         }
 
@@ -102,7 +126,16 @@ export const getUserInfo = async (): Promise<UserInfo | any> => {
         return normalizedUser;
 
     } catch (error: any) {
-        console.error("getUserInfo ERROR:", error);
+        console.error("getUserInfo ERROR:", error.message || error);
+
+        // Clean up cookies on any error to prevent infinite loops
+        try {
+            const { deleteCookie } = await import("./tokenHandaler");
+            await deleteCookie("accessToken");
+            await deleteCookie("refreshToken");
+        } catch (cleanupError) {
+            console.error("Failed to cleanup cookies:", cleanupError);
+        }
 
         // Return null instead of dummy data to indicate auth failure
         return null;

@@ -7,15 +7,12 @@ import {
   MemberDashboard,
   MemberStatsResponse,
   GetMembersParams,
-  CreateMemberData,
-  UpdateMemberData,
   UpdateFitnessProfileData,
   AssignTrainerData,
   UpdateMemberPlanData,
   RenewMembershipData,
   ApiResponse,
 } from '@/types/member.types';
-import { date } from 'zod';
 
 export class MemberService {
   private static readonly BASE_PATH = '/member';

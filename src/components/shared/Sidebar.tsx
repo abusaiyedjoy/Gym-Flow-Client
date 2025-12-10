@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown, ChevronRight, X, LogOut, Dumbbell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { navigationConfig } from '@/lib/navigation.config';
-import Logo from './Logo';
 import { logoutUser } from '@/services/auth/logoutUser';
 
 interface SidebarProps {

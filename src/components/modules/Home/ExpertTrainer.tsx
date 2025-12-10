@@ -213,8 +213,6 @@ export default function ExpertTrainers() {
     <section className="relative py-20 lg:py-28 bg-linear-to-br from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-size-[40px_40px]" />
-      <div className="absolute top-20 right-10 w-96 h-96 bg-orange-500/5 dark:bg-orange-500/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 left-10 w-72 h-72 bg-red-500/5 dark:bg-red-500/10 rounded-full blur-3xl" />
 
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

@@ -94,33 +94,11 @@ export default function TrainerContent() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center max-w-md p-8 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h3 className="text-2xl font-bold mb-2">Error Loading Trainers</h3>
-          <p className="text-zinc-600 dark:text-zinc-400 mb-6">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-950 dark:to-zinc-900">
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
-
-        {/* Gradient Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-600/20 rounded-full blur-3xl animate-pulse" />
 
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -168,8 +146,8 @@ export default function TrainerContent() {
                   key={value}
                   onClick={() => setSelectedFilter(value as any)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${selectedFilter === value
-                      ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                    ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -231,8 +209,12 @@ export default function TrainerContent() {
                     className="group relative bg-white dark:bg-zinc-900 rounded-3xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border border-zinc-200 dark:border-zinc-800"
                   >
                     {/* Gradient Header */}
-                    <div className={`relative h-48 bg-gradient-to-br ${getGradient(index)} overflow-hidden`}>
-                      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:20px_20px]" />
+                    <div className={`relative h-48 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden`}>
+                      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+
+                      {/* Gradient Orbs */}
+                      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse" />
+                      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-600/20 rounded-full blur-3xl animate-pulse" />
 
                       {/* Profile Image */}
                       <div className="absolute left-1/2 -translate-x-1/2 translate-y-1/2">

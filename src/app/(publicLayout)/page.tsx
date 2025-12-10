@@ -3,6 +3,8 @@ import WhyChooseUs from "@/components/modules/Home/WhyChooseUs";
 import AITrainerSection from "@/components/modules/Home/AITrainer";
 import ExpertTrainers from "@/components/modules/Home/ExpertTrainer";
 import Banner from "@/components/modules/Home/Banner";
+import PricingSection from "@/components/modules/Home/PricingSection";
+import FitnessCalculator from "@/components/modules/Home/FitnessCalculator";
 
 export default function Home() {
   return (
@@ -11,6 +13,8 @@ export default function Home() {
         <WhyChooseUs />
         <AITrainerSection />
         <ExpertTrainers />
+        <FitnessCalculator/>
+        <PricingSection/>
         <Testimonials />
     </main>
   );

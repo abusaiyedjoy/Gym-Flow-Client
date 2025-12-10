@@ -89,7 +89,7 @@ export default function PricingSection() {
       <div className="relative py-24 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
         {/* Animated Grid Background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] animate-pulse" />
-        
+
         {/* Gradient Orbs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-600/20 rounded-full blur-3xl animate-pulse" />
@@ -112,21 +112,19 @@ export default function PricingSection() {
             <div className="inline-flex items-center gap-4 p-2 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
               <button
                 onClick={() => setBillingCycle("monthly")}
-                className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${
-                  billingCycle === "monthly"
+                className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${billingCycle === "monthly"
                     ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
                     : "text-zinc-400 hover:text-white"
-                }`}
+                  }`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setBillingCycle("yearly")}
-                className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${
-                  billingCycle === "yearly"
+                className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${billingCycle === "yearly"
                     ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
                     : "text-zinc-400 hover:text-white"
-                }`}
+                  }`}
               >
                 Yearly
                 <span className="ml-2 text-xs bg-green-500 text-white px-2 py-1 rounded-full">
@@ -146,9 +144,8 @@ export default function PricingSection() {
             return (
               <div
                 key={plan.id}
-                className={`relative group ${
-                  plan.popular ? "md:-mt-8 md:mb-8" : ""
-                }`}
+                className={`relative group ${plan.popular ? "md:-mt-8 md:mb-8" : ""
+                  }`}
               >
                 {/* Popular Badge */}
                 {plan.popular && (
@@ -160,11 +157,10 @@ export default function PricingSection() {
                 )}
 
                 <div
-                  className={`relative bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 ${
-                    plan.popular
+                  className={`relative bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 ${plan.popular
                       ? "ring-2 ring-orange-500 hover:shadow-orange-500/20 hover:shadow-3xl scale-105"
                       : "hover:shadow-3xl hover:-translate-y-2"
-                  }`}
+                    }`}
                 >
                   {/* Gradient Header */}
                   <div className={`relative p-8 bg-gradient-to-br ${plan.color} overflow-hidden`}>
@@ -224,18 +220,13 @@ export default function PricingSection() {
 
                     {/* CTA Button */}
                     <button
-                      className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
-                        plan.popular
+                      className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${plan.popular
                           ? "bg-gradient-to-r from-orange-500 to-red-600 text-white hover:shadow-2xl hover:shadow-orange-500/50 hover:scale-105"
                           : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                      }`}
+                        }`}
                     >
                       Get Started
                     </button>
-
-                    <p className="text-center text-sm text-zinc-500 dark:text-zinc-500 mt-4">
-                      No credit card required
-                    </p>
                   </div>
                 </div>
               </div>

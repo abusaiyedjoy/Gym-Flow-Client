@@ -1,3 +1,4 @@
+"use server";
 import { verifyAccessToken } from "@/lib/jwtHandler";
 import { deleteCookie, getCookie, setCookie } from "./tokenHandaler";
 import { serverFetch } from "@/lib/serverFetch";

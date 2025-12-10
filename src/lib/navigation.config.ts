@@ -9,15 +9,13 @@ import {
   UserPlus,
   Target,
   Award,
-  MessageSquare,
-  Bell,
-  FileText,
   Database,
   Shield,
   Activity,
   ClipboardList,
   BarChart3,
   BookOpen,
+  Users2,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -29,7 +27,7 @@ export interface NavItem {
 }
 
 export const navigationConfig: Record<string, NavItem[]> = {
-  // Super Admin Navigation (routes under /dashboard/admin/) - includes all admin features
+
   SUPER_ADMIN: [
     {
       label: 'Dashboard',
@@ -37,9 +35,14 @@ export const navigationConfig: Record<string, NavItem[]> = {
       icon: LayoutDashboard,
     },
     {
+      label: 'Users',
+      href: '/dashboard/admin/users',
+      icon: Users,
+    },
+    {
       label: 'Members',
       href: '/dashboard/admin/members',
-      icon: Users,
+      icon: Users2,
       children: [
         { label: 'All Members', href: '/dashboard/admin/members', icon: Users },
         { label: 'Add Member', href: '/dashboard/admin/members/create', icon: UserPlus },

@@ -81,12 +81,16 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                     <div className="flex items-center justify-between h-16 lg:h-20">
                         {/* Logo */}
                         <Link href="/" className="flex items-center space-x-2 group">
-                            <div className="p-2 bg-red-600 rounded-lg group-hover:bg-red-700 transition-colors">
+                            <div className="p-2 bg-linear-to-r from-orange-400 to-red-600 rounded-lg group-hover:bg-red-700 transition-colors">
                                 <Dumbbell className="w-6 h-6 text-white" />
                             </div>
                             <span className="text-xl lg:text-2xl font-bold text-white">
-                                Gym<span className="text-red-600">Flow</span>
+                                Gym
+                                <span className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent">
+                                    Flow
+                                </span>
                             </span>
+
                         </Link>
 
                         {/* Desktop Navigation */}
@@ -99,10 +103,12 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                         }`}
                                 >
                                     {link.name}
+
                                     {isActive(link.href) && (
-                                        <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-linear-to-r from-red-600 to-orange-600 rounded-full" />
+                                        <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-red-600 to-orange-600 rounded-full" />
                                     )}
                                 </Link>
+
                             ))}
                         </div>
 
@@ -162,7 +168,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
 
                             ) : (
                                 <Link href="/signin">
-                                    <Button className="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-6">
+                                    <Button className="bg-linear-to-r from-orange-400 to-red-600 cursor-pointer hover:bg-red-700 text-white px-6">
                                         Sign In
                                     </Button>
                                 </Link>
@@ -185,8 +191,8 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
             {/* Mobile Drawer Overlay */}
             <div
                 className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden transition-opacity duration-300 ${isMobileMenuOpen
-                        ? "opacity-100 pointer-events-auto"
-                        : "opacity-0 pointer-events-none"
+                    ? "opacity-100 pointer-events-auto"
+                    : "opacity-0 pointer-events-none"
                     }`}
                 onClick={() => setIsMobileMenuOpen(false)}
             />
@@ -230,16 +236,16 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                                     href={link.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium group ${isActive(link.href)
-                                            ? "text-white bg-gradient-to-r from-red-600 to-orange-600 shadow-lg shadow-red-500/20"
-                                            : "text-gray-300 hover:text-white hover:bg-gray-800/50"
+                                        ? "text-white bg-gradient-to-r from-red-600 to-orange-600 shadow-lg shadow-red-500/20"
+                                        : "text-gray-300 hover:text-white hover:bg-gray-800/50"
                                         }`}
                                 >
                                     <span className="flex-1">{link.name}</span>
 
                                     <svg
                                         className={`w-4 h-4 transform transition-all ${isActive(link.href)
-                                                ? "text-white"
-                                                : "text-gray-500 group-hover:text-red-500 group-hover:translate-x-1"
+                                            ? "text-white"
+                                            : "text-gray-500 group-hover:text-red-500 group-hover:translate-x-1"
                                             }`}
                                         fill="none"
                                         viewBox="0 0 24 24"

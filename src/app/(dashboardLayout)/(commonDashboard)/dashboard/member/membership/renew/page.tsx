@@ -9,8 +9,9 @@ import { PageHeader } from "@/components/shared/PageComponents";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PlanService } from "@/services/plan/plan.service";
+import { PaymentService } from "@/services/payment/payment.service";
 import { MemberService } from "@/services/member/member.service";
 import { getUserInfo } from "@/services/auth/getUserInfo";
 import { MembershipPlan } from "@/types/plan.types";
@@ -19,6 +20,7 @@ import { toast } from "sonner";
 
 export default function RenewMembershipPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [plans, setPlans] = useState<MembershipPlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,16 @@ export default function RenewMembershipPage() {
     useEffect(() => {
         fetchPlans();
     }, []);
-console.log("MemberId:", memberId);
+
+    useEffect(() => {
+        // Check if planId is in URL query params
+        const planIdFromUrl = searchParams?.get("planId");
+        if (planIdFromUrl && plans.length > 0) {
+            setSelectedPlan(planIdFromUrl);
+        }
+    }, [searchParams, plans]);
+
+    console.log("MemberId:", memberId);
     const fetchPlans = async () => {
         try {
             setLoading(true);
@@ -79,22 +90,53 @@ console.log("MemberId:", memberId);
         try {
             setRenewing(true);
 
-            // Call the renewal API
-            const result = await MemberService.renewMembership(memberId, {
-                planId: selectedPlan,
-                paymentMethod: paymentMethod,
-            });
+            // Check if payment method is online (SSLCommerz, Stripe, etc.)
+            const onlinePaymentMethods = [
+                PaymentMethod.SSLCOMMERZ,
+                PaymentMethod.STRIPE,
+                PaymentMethod.BKASH,
+                PaymentMethod.NAGAD
+            ];
 
-            toast.success("Membership renewed successfully!", {
-                description: result.member.membershipEndDate
-                    ? `Your new plan is active until ${new Date(result.member.membershipEndDate).toLocaleDateString()}`
-                    : "Your membership has been renewed successfully",
-            });
+            if (onlinePaymentMethods.includes(paymentMethod)) {
+                // Initiate online payment
+                const result = await PaymentService.initiatePayment({
+                    memberId: memberId,
+                    planId: selectedPlan,
+                    paymentMethod: paymentMethod,
+                    successUrl: `${window.location.origin}/dashboard/member/payment/success`,
+                    failUrl: `${window.location.origin}/dashboard/member/payment/fail`,
+                    cancelUrl: `${window.location.origin}/dashboard/member/payment/cancel`,
+                });
 
-            // Redirect to membership page after successful renewal
-            setTimeout(() => {
-                router.push("/dashboard/member/membership");
-            }, 2000);
+                console.log("Payment initiated:", result);
+                console.log("Gateway URL:", result.data.gatewayUrl);
+                console.log("Payment ID:", result.data.paymentId);
+
+                // Redirect to payment gateway
+                if (result.data.gatewayUrl) {
+                    window.location.href = result.data.gatewayUrl;
+                } else {
+                    throw new Error("Gateway URL not received from server");
+                }
+            } else {
+                // For cash/card, call direct renewal API
+                const result = await MemberService.renewMembership(memberId, {
+                    planId: selectedPlan,
+                    paymentMethod: paymentMethod,
+                });
+
+                toast.success("Membership renewed successfully!", {
+                    description: result.member.membershipEndDate
+                        ? `Your new plan is active until ${new Date(result.member.membershipEndDate).toLocaleDateString()}`
+                        : "Your membership has been renewed successfully",
+                });
+
+                // Redirect to membership page after successful renewal
+                setTimeout(() => {
+                    router.push("/dashboard/member/membership");
+                }, 2000);
+            }
         } catch (err: any) {
             console.error("Error renewing membership:", err);
             toast.error("Failed to renew membership", {
@@ -103,9 +145,7 @@ console.log("MemberId:", memberId);
         } finally {
             setRenewing(false);
         }
-    };
-
-    if (loading) {
+    }; if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <div className="text-center">

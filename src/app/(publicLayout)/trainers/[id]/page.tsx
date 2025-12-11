@@ -124,19 +124,12 @@ export default function TrainerDetailPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-950 dark:to-zinc-900">
             {/* Hero Section */}
-            <div className={`relative bg-gradient-to-br ${gradient} text-white py-12 overflow-hidden`}>
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:40px_40px]" />
+            <div className="relative py-20 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
 
                 <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Back Button */}
-                    <Link href="/trainers">
-                        <Button variant="ghost" className="text-white hover:bg-white/20 mb-6">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Trainers
-                        </Button>
-                    </Link>
 
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mt-4">
                         {/* Profile Image */}
                         <div className="relative">
                             <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white shadow-2xl bg-white flex items-center justify-center overflow-hidden">
@@ -165,7 +158,7 @@ export default function TrainerDetailPage() {
                         {/* Trainer Info */}
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-4xl md:text-5xl font-bold">{trainer.user.name}</h1>
+                                <h1 className="text-4xl md:text-5xl text-white font-bold">{trainer.user.name}</h1>
                                 {trainer.user.isVerified && (
                                     <BadgeCheck className="w-8 h-8 text-white fill-white" />
                                 )}
@@ -369,8 +362,8 @@ export default function TrainerDetailPage() {
                                                         <Star
                                                             key={i}
                                                             className={`w-4 h-4 ${i < review.rating
-                                                                    ? 'fill-yellow-400 text-yellow-400'
-                                                                    : 'text-zinc-300'
+                                                                ? 'fill-yellow-400 text-yellow-400'
+                                                                : 'text-zinc-300'
                                                                 }`}
                                                         />
                                                     ))}

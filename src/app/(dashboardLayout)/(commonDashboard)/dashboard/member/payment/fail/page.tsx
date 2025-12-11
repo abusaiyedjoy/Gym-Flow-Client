@@ -12,18 +12,18 @@ export default function PaymentFailPage() {
 
     const errorMessage = searchParams.get("error") || "Payment failed. Please try again.";
     const transactionId = searchParams.get("tran_id");
-    const trainerId = searchParams.get("trainerId");
+    const failedReason = searchParams.get("failedreason");
 
     const handleRetry = () => {
-        if (trainerId) {
-            router.push(`/dashboard/member/find-trainer?retry=${trainerId}`);
-        } else {
-            router.push("/dashboard/member/find-trainer");
-        }
+        router.push("/dashboard/member/membership/renew");
+    };
+
+    const handleGoHome = () => {
+        router.push("/dashboard/member/membership");
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="min-h-screen  flex items-center justify-center p-4">
             <Card className="max-w-2xl w-full shadow-2xl border-red-200 dark:border-red-900">
                 <CardHeader className="text-center space-y-4 pb-8">
                     <div className="mx-auto w-20 h-20 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
@@ -48,6 +48,14 @@ export default function PaymentFailPage() {
                                 <p className="font-semibold text-red-900 dark:text-red-300">
                                     What went wrong?
                                 </p>
+                                <p className="text-sm text-red-800 dark:text-red-400">
+                                    {failedReason || errorMessage}
+                                </p>
+                                {transactionId && (
+                                    <p className="text-xs text-red-700 dark:text-red-500 font-mono">
+                                        Transaction ID: {transactionId}
+                                    </p>
+                                )}
                                 <p className="text-sm text-red-800 dark:text-red-400">
                                     {errorMessage}
                                 </p>

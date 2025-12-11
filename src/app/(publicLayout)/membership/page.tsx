@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, Crown, Dumbbell, Flame, Heart, Shield, Sparkles, Star, Trophy, Users, Zap, Loader2 } from "lucide-react";
+import { Check, Crown, Dumbbell, Flame, Heart, Shield, Sparkles, Star, Trophy, Users, Zap, Loader2, ArrowRight } from "lucide-react";
 import { PlanService } from "@/services/plan/plan.service";
 import { MembershipPlan } from "@/types/plan.types";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { getUserInfo } from "@/services/auth/getUserInfo";
+import { toast } from "sonner";
 
 // Icon mapping for plans
 const planIcons: Record<string, any> = {
@@ -14,11 +19,36 @@ const planIcons: Record<string, any> = {
 };
 
 export default function PricingSection() {
+  const router = useRouter();
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+
+  // Check if user is logged in and is a member
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const userInfo = await getUserInfo();
+        if (userInfo && userInfo.id) {
+          setIsLoggedIn(true);
+          // Check if user is a member
+          if (userInfo.member) {
+            setIsMember(true);
+          }
+        }
+      } catch (err) {
+        // User not logged in
+        setIsLoggedIn(false);
+        setIsMember(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   // Fetch active plans on component mount
   useEffect(() => {
@@ -60,6 +90,25 @@ export default function PricingSection() {
   // Get icon for plan
   const getPlanIcon = (planName: string) => {
     return planIcons[planName] || Dumbbell;
+  };
+
+  // Handle plan selection and navigation
+  const handleBuyNow = (planId: string) => {
+    if (!isLoggedIn) {
+      // Not logged in - redirect to signin
+      router.push("/signin");
+      return;
+    }
+
+    if (!isMember) {
+      // Logged in but not a member - redirect to signup
+      toast.error("Please complete member registration first");
+      router.push("/signup");
+      return;
+    }
+
+    // Member is logged in - redirect to renew page with selected plan
+    router.push(`/dashboard/member/membership/renew?planId=${planId}`);
   };
 
   return (
@@ -171,8 +220,8 @@ export default function PricingSection() {
                   <div
                     onClick={() => setSelectedPlan(plan.id)}
                     className={`relative bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-500 cursor-pointer ${plan.isPopular
-                        ? "border-2 border-red-500 shadow-2xl shadow-red-500/20"
-                        : "border border-gray-200 hover:border-red-300"
+                      ? "border-2 border-red-500 shadow-2xl shadow-red-500/20"
+                      : "border border-gray-200 hover:border-red-300"
                       } ${isSelected ? "ring-4 ring-red-500 scale-105" : "hover:shadow-2xl hover:-translate-y-2"
                       }`}
                   >
@@ -248,18 +297,23 @@ export default function PricingSection() {
 
                       {/* CTA Button */}
                       <button
+                        onClick={() => handleBuyNow(plan.id)}
                         className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${plan.isPopular
-                            ? "bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-2xl hover:shadow-red-500/50 hover:scale-105"
-                            : "bg-gray-100 text-gray-900 border-2 border-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent"
+                          ? "bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-2xl hover:shadow-red-500/50 hover:scale-105"
+                          : "bg-gray-100 text-gray-900 border-2 border-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent"
                           }`}
                       >
                         {isSelected ? (
                           <span className="flex items-center justify-center gap-2">
                             <Check className="w-5 h-5" />
-                            Selected
+                            {isLoggedIn && isMember ? "Buy Now" : "Get Started"}
+                            <ArrowRight className="w-5 h-5" />
                           </span>
                         ) : (
-                          "Get Started"
+                          <span className="flex items-center justify-center gap-2">
+                            {isLoggedIn && isMember ? "Buy Now" : "Get Started"}
+                            <ArrowRight className="w-5 h-5" />
+                          </span>
                         )}
                       </button>
                     </div>

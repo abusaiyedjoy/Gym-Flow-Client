@@ -220,4 +220,23 @@ export class PaymentService {
 
         return await response.json();
     }
+
+    /**
+     * Get member's most recent pending payment
+     */
+    static async getMemberPendingPayment(memberId: string): Promise<Payment | null> {
+        try {
+            const response = await this.getMemberPayments(memberId, 1, 10);
+
+            // Find the most recent pending payment
+            const pendingPayment = response.data.find(
+                (payment: Payment) => payment.status === 'PENDING'
+            );
+
+            return pendingPayment || null;
+        } catch (error) {
+            console.error('Failed to fetch pending payment:', error);
+            return null;
+        }
+    }
 }

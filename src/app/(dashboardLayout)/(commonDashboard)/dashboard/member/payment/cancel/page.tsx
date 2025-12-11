@@ -11,18 +11,17 @@ export default function PaymentCancelPage() {
     const router = useRouter();
 
     const transactionId = searchParams.get("tran_id");
-    const trainerId = searchParams.get("trainerId");
 
     const handleRetry = () => {
-        if (trainerId) {
-            router.push(`/dashboard/member/find-trainer?retry=${trainerId}`);
-        } else {
-            router.push("/dashboard/member/find-trainer");
-        }
+        router.push("/dashboard/member/membership/renew");
+    };
+
+    const handleGoHome = () => {
+        router.push("/dashboard/member/membership");
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4">
             <Card className="max-w-2xl w-full shadow-2xl border-orange-200 dark:border-orange-900">
                 <CardHeader className="text-center space-y-4 pb-8">
                     <div className="mx-auto w-20 h-20 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">

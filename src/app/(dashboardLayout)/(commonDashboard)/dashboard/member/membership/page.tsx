@@ -1,82 +1,117 @@
 "use client";
 
-import { useState } from "react";
-import { Check, Calendar, CreditCard, AlertCircle, Crown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Calendar, CreditCard, AlertCircle, Crown, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/shared/PageComponents";
 import Link from "next/link";
-
-interface MembershipPlan {
-    id: string;
-    name: string;
-    price: number;
-    duration: string;
-    features: string[];
-    isActive: boolean;
-    startDate: string;
-    endDate: string;
-}
-
-const mockActivePlan: MembershipPlan = {
-    id: "PLAN-001",
-    name: "Premium Plan",
-    price: 99.99,
-    duration: "Monthly",
-    features: [
-        "Unlimited gym access",
-        "Personal trainer sessions (8/month)",
-        "Group fitness classes",
-        "Nutrition consultation",
-        "Access to all equipment",
-        "Locker & towel service",
-        "Mobile app access",
-        "Guest passes (2/month)",
-    ],
-    isActive: true,
-    startDate: "2024-01-15",
-    endDate: "2025-01-15",
-};
+import { getUserInfo } from "@/services/auth/getUserInfo";
+import { PlanService } from "@/services/plan/plan.service";
+import { MembershipPlan } from "@/types/plan.types";
 
 export default function MembershipPage() {
-    const [activePlan] = useState<MembershipPlan>(mockActivePlan);
+    const [loading, setLoading] = useState(true);
+    const [currentPlan, setCurrentPlan] = useState<MembershipPlan | null>(null);
+    const [member, setMember] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const startDate = new Date(activePlan.startDate);
-    const endDate = new Date(activePlan.endDate);
+    useEffect(() => {
+        fetchMembershipData();
+    }, []);
+console.log('Member Data:', member);
+    console.log('Current Plan Data:', currentPlan);
+    const fetchMembershipData = async () => {
+        try {
+            setLoading(true);
+            const userInfo = await getUserInfo();
+            setMember(userInfo.member);
+
+            if (userInfo.member?.currentPlanId) {
+                const planData = await PlanService.getPlanById(userInfo.member.currentPlanId);
+                setCurrentPlan(planData);
+            }
+        } catch (err: any) {
+            console.error("Error fetching membership:", err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                    <p className="mt-4 text-muted-foreground">Loading membership...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !member) {
+        return (
+            <div className="space-y-6">
+                <PageHeader title="My Membership" description="Manage your membership plan and billing" />
+                <Card className="border-red-500/50 bg-red-500/5">
+                    <CardContent className="pt-6">
+                        <p className="text-red-600">{error || "Failed to load membership"}</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    if (!currentPlan || !member.currentPlanId) {
+        return (
+            <div className="space-y-6">
+                <PageHeader title="My Membership" description="Manage your membership plan and billing" />
+                <Card>
+                    <CardContent className="pt-6 text-center">
+                        <p className="text-muted-foreground mb-4">You don't have an active membership plan</p>
+                        <Link href="/dashboard/member/membership/renew">
+                            <Button>Choose a Plan</Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    const startDate = member.planStartDate ? new Date(member.planStartDate) : new Date();
+    const endDate = member.planEndDate ? new Date(member.planEndDate) : new Date();
     const today = new Date();
     const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const daysElapsed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const daysRemaining = totalDays - daysElapsed;
-    const progressPercentage = (daysElapsed / totalDays) * 100;
+    const daysRemaining = Math.max(0, totalDays - daysElapsed);
+    const progressPercentage = Math.min(100, (daysElapsed / totalDays) * 100);
+    const isExpiringSoon = daysRemaining <= 30 && daysRemaining > 0;
+    const isExpired = daysRemaining <= 0;
 
-    const isExpiringSoon = daysRemaining <= 30;
+    const finalPrice = currentPlan.price * (1 - currentPlan.discount / 100);
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title="My Membership"
-                description="Manage your membership plan and billing"
-            />
+            <PageHeader title="My Membership" description="Manage your membership plan and billing" />
 
-            {/* Expiring Soon Alert */}
-            {isExpiringSoon && (
-                <Card className="border-yellow-500/50 bg-yellow-500/5">
+            {/* Expiring Soon or Expired Alert */}
+            {(isExpiringSoon || isExpired) && (
+                <Card className={`border-${isExpired ? 'red' : 'yellow'}-500/50 bg-${isExpired ? 'red' : 'yellow'}-500/5`}>
                     <CardContent className="pt-6">
                         <div className="flex items-start gap-3">
-                            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                            <AlertCircle className={`h-5 w-5 text-${isExpired ? 'red' : 'yellow'}-600 mt-0.5`} />
                             <div className="flex-1">
-                                <h4 className="font-semibold text-yellow-900 dark:text-yellow-100">
-                                    Your membership is expiring soon!
+                                <h4 className={`font-semibold text-${isExpired ? 'red' : 'yellow'}-900 dark:text-${isExpired ? 'red' : 'yellow'}-100`}>
+                                    {isExpired ? "Your membership has expired!" : "Your membership is expiring soon!"}
                                 </h4>
-                                <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
-                                    Your membership will expire in {daysRemaining} days. Renew now to continue enjoying all benefits.
+                                <p className={`text-sm text-${isExpired ? 'red' : 'yellow'}-800 dark:text-${isExpired ? 'red' : 'yellow'}-200 mt-1`}>
+                                    {isExpired ? "Please renew to continue accessing gym facilities" : `Your membership will expire in ${daysRemaining} days. Renew now to continue enjoying all benefits.`}
                                 </p>
                                 <Link href="/dashboard/member/membership/renew">
-                                    <Button size="sm" className="mt-3">
-                                        Renew Membership
-                                    </Button>
+                                    <Button size="sm" className="mt-3">Renew Membership</Button>
                                 </Link>
                             </div>
                         </div>
@@ -93,25 +128,20 @@ export default function MembershipPage() {
                                 <Crown className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                                <CardTitle className="text-2xl">{activePlan.name}</CardTitle>
-                                <CardDescription className="mt-1">
-                                    ${activePlan.price.toFixed(2)} / {activePlan.duration}
-                                </CardDescription>
+                                <CardTitle className="text-2xl">{currentPlan.name}</CardTitle>
+                                <CardDescription className="mt-1">৳{finalPrice.toFixed(0)} / {currentPlan.durationDays} days</CardDescription>
                             </div>
                         </div>
-                        <Badge className="bg-green-500/10 text-green-700 dark:text-green-400">
-                            Active
+                        <Badge className={member.isActive ? "bg-green-500/10 text-green-700" : "bg-gray-500/10 text-gray-500"}>
+                            {member.isActive ? "Active" : "Inactive"}
                         </Badge>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {/* Membership Period */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Membership Period</span>
-                            <span className="font-medium">
-                                {daysRemaining} days remaining
-                            </span>
+                            <span className="font-medium">{daysRemaining} days remaining</span>
                         </div>
                         <Progress value={progressPercentage} className="h-2" />
                         <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -120,11 +150,10 @@ export default function MembershipPage() {
                         </div>
                     </div>
 
-                    {/* Features */}
                     <div>
                         <h4 className="font-semibold mb-4">Plan Features</h4>
                         <div className="grid gap-3 md:grid-cols-2">
-                            {activePlan.features.map((feature, index) => (
+                            {currentPlan.features.map((feature: string, index: number) => (
                                 <div key={index} className="flex items-start gap-2">
                                     <div className="mt-0.5 p-0.5 bg-green-500 rounded-full">
                                         <Check className="h-3 w-3 text-white" />
@@ -132,10 +161,17 @@ export default function MembershipPage() {
                                     <span className="text-sm">{feature}</span>
                                 </div>
                             ))}
+                            {currentPlan.personalTrainingSessions > 0 && (
+                                <div className="flex items-start gap-2">
+                                    <div className="mt-0.5 p-0.5 bg-green-500 rounded-full">
+                                        <Check className="h-3 w-3 text-white" />
+                                    </div>
+                                    <span className="text-sm">{currentPlan.personalTrainingSessions} Personal Training Sessions</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex flex-wrap gap-3 pt-4 border-t">
                         <Link href="/dashboard/member/membership/renew">
                             <Button>
@@ -154,64 +190,26 @@ export default function MembershipPage() {
             {/* Payment Information */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Payment Information</CardTitle>
-                    <CardDescription>Your billing details and payment method</CardDescription>
+                    <CardTitle>Billing Summary</CardTitle>
+                    <CardDescription>Your current plan details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-4">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <CreditCard className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                                <p className="font-medium">•••• •••• •••• 4242</p>
-                                <p className="text-sm text-muted-foreground">Expires 12/25</p>
-                            </div>
-                            <Badge variant="secondary">Default</Badge>
-                        </div>
-                        <Button variant="outline" size="sm">
-                            Update
-                        </Button>
-                    </div>
-
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="p-4 border rounded-lg">
-                            <p className="text-sm text-muted-foreground mb-1">Next Billing Date</p>
-                            <p className="font-semibold">
-                                {new Date(activePlan.endDate).toLocaleDateString()}
-                            </p>
+                            <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
+                            <p className="font-semibold">{currentPlan.name}</p>
                         </div>
                         <div className="p-4 border rounded-lg">
-                            <p className="text-sm text-muted-foreground mb-1">Next Payment Amount</p>
-                            <p className="font-semibold">${activePlan.price.toFixed(2)}</p>
+                            <p className="text-sm text-muted-foreground mb-1">Plan Price</p>
+                            <p className="font-semibold">৳{finalPrice.toFixed(0)}</p>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Usage Stats */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>This Month's Usage</CardTitle>
-                    <CardDescription>Your gym activity this billing period</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid gap-4 md:grid-cols-4">
-                        <div className="p-4 border rounded-lg text-center">
-                            <p className="text-3xl font-bold text-primary">24</p>
-                            <p className="text-sm text-muted-foreground mt-1">Gym Visits</p>
+                        <div className="p-4 border rounded-lg">
+                            <p className="text-sm text-muted-foreground mb-1">Expiry Date</p>
+                            <p className="font-semibold">{endDate.toLocaleDateString()}</p>
                         </div>
-                        <div className="p-4 border rounded-lg text-center">
-                            <p className="text-3xl font-bold text-primary">8</p>
-                            <p className="text-sm text-muted-foreground mt-1">Trainer Sessions</p>
-                        </div>
-                        <div className="p-4 border rounded-lg text-center">
-                            <p className="text-3xl font-bold text-primary">12</p>
-                            <p className="text-sm text-muted-foreground mt-1">Classes Attended</p>
-                        </div>
-                        <div className="p-4 border rounded-lg text-center">
-                            <p className="text-3xl font-bold text-primary">36</p>
-                            <p className="text-sm text-muted-foreground mt-1">Total Hours</p>
+                        <div className="p-4 border rounded-lg">
+                            <p className="text-sm text-muted-foreground mb-1">Days Remaining</p>
+                            <p className="font-semibold">{daysRemaining} days</p>
                         </div>
                     </div>
                 </CardContent>

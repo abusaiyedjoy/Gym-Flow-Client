@@ -109,3 +109,23 @@ export async function getNewAccessToken() {
     }
 
 }
+
+// Get me 
+export async function getMe() {
+    try {
+        const response = await serverFetch.get("/auth/me", {
+            cache: "no-store",
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to fetch user info");
+        }   
+        return result;
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error?.message || "Something went wrong",
+        };
+    }
+};

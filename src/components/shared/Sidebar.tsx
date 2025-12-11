@@ -103,7 +103,7 @@ const isParentActive = (item: any) =>
       </div>
 
       {/* Footer */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 border-t bg-gray-50">
+      <div className=" hidden lg:block fixed bottom-0 left-0 right-0 p-4 border-t bg-gray-50">
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}

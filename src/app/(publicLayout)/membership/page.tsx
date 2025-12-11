@@ -1,90 +1,69 @@
 "use client";
 
-import { useState } from "react";
-import { Check, Crown, Zap, Star, TrendingUp, Users, Award, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Crown, Dumbbell, Flame, Heart, Shield, Sparkles, Star, Trophy, Users, Zap, Loader2 } from "lucide-react";
+import { PlanService } from "@/services/plan/plan.service";
+import { MembershipPlan } from "@/types/plan.types";
 
-interface MembershipPlan {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: string;
-  features: string[];
-  popular: boolean;
-  color: string;
-  icon: any;
-  memberCount: number;
-}
-
-const plans: MembershipPlan[] = [
-  {
-    id: "1",
-    name: "Basic",
-    description: "Perfect for beginners starting their fitness journey",
-    price: 500,
-    duration: "month",
-    features: [
-      "Access to gym equipment",
-      "Locker facility",
-      "Basic workout plan",
-      "Open gym hours",
-      "Mobile app access",
-    ],
-    popular: false,
-    color: "from-blue-500 to-cyan-500",
-    icon: Users,
-    memberCount: 245,
-  },
-  {
-    id: "2",
-    name: "Premium",
-    description: "For serious fitness enthusiasts who want more",
-    price: 1000,
-    duration: "month",
-    features: [
-      "All Basic features",
-      "Personal trainer (2 sessions/week)",
-      "Nutrition consultation",
-      "Group classes access",
-      "Priority support",
-      "Guest passes (2/month)",
-    ],
-    popular: true,
-    color: "from-orange-500 to-red-600",
-    icon: Crown,
-    memberCount: 512,
-  },
-  {
-    id: "3",
-    name: "Elite",
-    description: "Ultimate fitness experience with premium perks",
-    price: 1500,
-    duration: "month",
-    features: [
-      "All Premium features",
-      "Unlimited personal training",
-      "Priority class booking",
-      "Spa & sauna access",
-      "Customized meal plans",
-      "Free supplements",
-      "Unlimited guest passes",
-    ],
-    popular: false,
-    color: "from-purple-500 to-pink-600",
-    icon: Award,
-    memberCount: 128,
-  },
-];
+// Icon mapping for plans
+const planIcons: Record<string, any> = {
+  'Pro': Flame,
+  'Elite': Trophy,
+  'Premium': Star,
+  'Basic': Heart,
+};
 
 export default function PricingSection() {
+  const [plans, setPlans] = useState<MembershipPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
-  const getPrice = (basePrice: number) => {
-    return billingCycle === "yearly" ? Math.round(basePrice * 10) : basePrice;
+  // Fetch active plans on component mount
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await PlanService.getActivePlans();
+        setPlans(data);
+      } catch (err: any) {
+        console.error("Error fetching plans:", err);
+        setError(err.message || "Failed to load membership plans");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
+  const getPrice = (basePrice: number, durationDays: number) => {
+    if (billingCycle === "yearly") {
+      // Calculate yearly price (assuming monthly plans, multiply by 12)
+      const monthsInPlan = durationDays / 30;
+      return Math.round((basePrice / monthsInPlan) * 12);
+    }
+    return basePrice;
+  };
+
+  const calculateDiscountedPrice = (price: number, discount: number, durationDays: number) => {
+    const finalPrice = price * (1 - discount / 100);
+    if (billingCycle === "yearly") {
+      const monthsInPlan = durationDays / 30;
+      return Math.round((finalPrice / monthsInPlan) * 12);
+    }
+    return finalPrice;
+  };
+
+  // Get icon for plan
+  const getPlanIcon = (planName: string) => {
+    return planIcons[planName] || Dumbbell;
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
+    <section className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Hero Header */}
       <div className="relative py-24 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
         {/* Animated Grid Background */}
@@ -113,8 +92,8 @@ export default function PricingSection() {
               <button
                 onClick={() => setBillingCycle("monthly")}
                 className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${billingCycle === "monthly"
-                    ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                    : "text-zinc-400 hover:text-white"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
                   }`}
               >
                 Monthly
@@ -122,8 +101,8 @@ export default function PricingSection() {
               <button
                 onClick={() => setBillingCycle("yearly")}
                 className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${billingCycle === "yearly"
-                    ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                    : "text-zinc-400 hover:text-white"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
                   }`}
               >
                 Yearly
@@ -137,139 +116,199 @@ export default function PricingSection() {
       </div>
 
       {/* Pricing Cards */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-12 md:mt-20 lg:mt-24 relative z-10 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {plans.map((plan) => {
-            const Icon = plan.icon;
-            return (
-              <div
-                key={plan.id}
-                className={`relative group ${plan.popular ? "md:-mt-8 md:mb-8" : ""
-                  }`}
-              >
-                {/* Popular Badge */}
-                {plan.popular && (
-                  <div className="absolute -top-5 left-0 right-0 flex justify-center z-20">
-                    <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm font-bold px-6 py-2 rounded-full shadow-xl">
-                      MOST POPULAR
-                    </div>
-                  </div>
-                )}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-16 relative z-10 pb-20">
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center space-y-4">
+              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+              <p className="text-muted-foreground">Loading membership plans...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center space-y-4">
+              <p className="text-red-600 font-semibold">Failed to load plans</p>
+              <p className="text-muted-foreground">{error}</p>
+            </div>
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">No membership plans available</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {plans.map((plan, index) => {
+              const Icon = getPlanIcon(plan.name);
+              const isSelected = selectedPlan === plan.id;
+              const finalPrice = plan.discount > 0
+                ? calculateDiscountedPrice(plan.price, plan.discount, plan.durationDays)
+                : getPrice(plan.price, plan.durationDays);
 
+              return (
                 <div
-                  className={`relative bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 ${plan.popular
-                      ? "ring-2 ring-orange-500 hover:shadow-orange-500/20 hover:shadow-3xl scale-105"
-                      : "hover:shadow-3xl hover:-translate-y-2"
-                    }`}
+                  key={plan.id}
+                  className={`relative group ${plan.isPopular ? "lg:scale-105" : ""}`}
                 >
-                  {/* Gradient Header */}
-                  <div className={`relative p-8 bg-gradient-to-br ${plan.color} overflow-hidden`}>
-                    {/* Background Pattern */}
-                    <div className="absolute inset-0 opacity-20">
-                      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff12_1px,transparent_1px),linear-gradient(to_bottom,#ffffff12_1px,transparent_1px)] bg-[size:20px_20px]" />
+                  {/* Popular Badge */}
+                  {plan.isPopular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                      <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                        <Crown className="w-4 h-4" />
+                        MOST POPULAR
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Discount Badge */}
+                  {plan.discount > 0 && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                        Save {plan.discount}%
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    onClick={() => setSelectedPlan(plan.id)}
+                    className={`relative bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-500 cursor-pointer ${plan.isPopular
+                        ? "border-2 border-red-500 shadow-2xl shadow-red-500/20"
+                        : "border border-gray-200 hover:border-red-300"
+                      } ${isSelected ? "ring-4 ring-red-500 scale-105" : "hover:shadow-2xl hover:-translate-y-2"
+                      }`}
+                  >
+                    {/* Animated Background Effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-orange-500/5" />
                     </div>
 
-                    <div className="relative">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                          <Icon className="w-7 h-7 text-white" />
+                    {/* Card Content */}
+                    <div className="relative p-8">
+                      {/* Icon & Member Count */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform duration-300">
+                          <Icon className="w-8 h-8 text-white" />
                         </div>
-                        <div className="flex items-center gap-1 text-white/80 text-sm">
+                        <div className="flex items-center gap-1 text-gray-500 text-sm">
                           <Users className="w-4 h-4" />
-                          <span>{plan.memberCount} members</span>
+                          <span>{plan._count?.members || 0}</span>
                         </div>
                       </div>
 
-                      <h3 className="text-3xl font-bold text-white mb-2">{plan.name}</h3>
-                      <p className="text-white/80 text-sm mb-6">{plan.description}</p>
+                      {/* Plan Name & Description */}
+                      <h3 className="text-3xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                      <p className="text-gray-600 text-sm mb-6">{plan.description}</p>
 
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-5xl font-bold text-white">
-                          ৳{getPrice(plan.price)}
-                        </span>
-                        <span className="text-white/80">
+                      {/* Price */}
+                      <div className="mb-6">
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-5xl font-bold text-gray-900">
+                            ৳{finalPrice}
+                          </span>
+                          {plan.discount > 0 && (
+                            <span className="text-xl text-gray-400 line-through">
+                              ৳{getPrice(plan.price, plan.durationDays)}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-gray-500 text-sm">
                           /{billingCycle === "monthly" ? "month" : "year"}
                         </span>
                       </div>
 
-                      {billingCycle === "yearly" && (
-                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full">
-                          <TrendingUp className="w-4 h-4 text-white" />
-                          <span className="text-sm text-white font-medium">
-                            Save ${plan.price * 2}/year
-                          </span>
+                      {/* Personal Training Sessions */}
+                      {plan.personalTrainingSessions > 0 && (
+                        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl">
+                          <div className="flex items-center gap-2 text-red-600">
+                            <Zap className="w-5 h-5" />
+                            <span className="font-semibold text-sm">
+                              {plan.personalTrainingSessions === 999
+                                ? "Unlimited"
+                                : plan.personalTrainingSessions}{" "}
+                              PT Sessions
+                            </span>
+                          </div>
                         </div>
                       )}
-                    </div>
-                  </div>
 
-                  {/* Features */}
-                  <div className="p-8">
-                    <div className="space-y-4 mb-8">
-                      {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-start gap-3 group/item">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform">
-                            <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                      {/* Features */}
+                      <div className="space-y-3 mb-8">
+                        {plan.features.map((feature, idx) => (
+                          <div key={idx} className="flex items-start gap-3 group/item">
+                            <div className="mt-0.5 flex-shrink-0">
+                              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center group-hover/item:scale-110 transition-transform">
+                                <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                              </div>
+                            </div>
+                            <span className="text-gray-700 text-sm leading-relaxed">
+                              {feature}
+                            </span>
                           </div>
-                          <span className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                            {feature}
+                        ))}
+                      </div>
+
+                      {/* CTA Button */}
+                      <button
+                        className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${plan.isPopular
+                            ? "bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-2xl hover:shadow-red-500/50 hover:scale-105"
+                            : "bg-gray-100 text-gray-900 border-2 border-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent"
+                          }`}
+                      >
+                        {isSelected ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <Check className="w-5 h-5" />
+                            Selected
                           </span>
-                        </div>
-                      ))}
+                        ) : (
+                          "Get Started"
+                        )}
+                      </button>
                     </div>
 
-                    {/* CTA Button */}
-                    <button
-                      className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${plan.popular
-                          ? "bg-gradient-to-r from-orange-500 to-red-600 text-white hover:shadow-2xl hover:shadow-orange-500/50 hover:scale-105"
-                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                        }`}
-                    >
-                      Get Started
-                    </button>
+                    {/* Bottom Accent */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Benefits Section */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-900 dark:to-zinc-800 rounded-3xl p-12 shadow-2xl border border-zinc-200 dark:border-zinc-700">
-            <h3 className="text-3xl font-bold text-center text-zinc-900 dark:text-white mb-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-3xl p-12 shadow-xl">
+            <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
               Why Choose Us?
             </h3>
 
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-green-500/30">
+              <div className="text-center space-y-4 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform">
                   <Check className="w-8 h-8 text-white" strokeWidth={3} />
                 </div>
-                <h4 className="text-xl font-bold text-zinc-900 dark:text-white">No Hidden Fees</h4>
-                <p className="text-zinc-600 dark:text-zinc-400">
+                <h4 className="text-xl font-bold text-gray-900">No Hidden Fees</h4>
+                <p className="text-gray-600">
                   Crystal clear pricing with absolutely no surprises or hidden charges
                 </p>
               </div>
 
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-orange-500/30">
+              <div className="text-center space-y-4 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform">
                   <Zap className="w-8 h-8 text-white" />
                 </div>
-                <h4 className="text-xl font-bold text-zinc-900 dark:text-white">Cancel Anytime</h4>
-                <p className="text-zinc-600 dark:text-zinc-400">
+                <h4 className="text-xl font-bold text-gray-900">Cancel Anytime</h4>
+                <p className="text-gray-600">
                   Complete flexibility with no long-term contracts or commitments
                 </p>
               </div>
 
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-purple-500/30">
+              <div className="text-center space-y-4 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
                   <Shield className="w-8 h-8 text-white" />
                 </div>
-                <h4 className="text-xl font-bold text-zinc-900 dark:text-white">7-Day Money Back</h4>
-                <p className="text-zinc-600 dark:text-zinc-400">
+                <h4 className="text-xl font-bold text-gray-900">7-Day Money Back</h4>
+                <p className="text-gray-600">
                   Not satisfied? Get a full refund within the first week, no questions asked
                 </p>
               </div>

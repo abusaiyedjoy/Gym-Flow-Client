@@ -8,17 +8,12 @@ import { getCookie } from "./tokenHandaler";
 
 export const getUserInfo = async (): Promise<UserInfo | any> => {
     try {
-        // -----------------------------------------------------
-        // 1️⃣ Get accessToken from cookies
-        // -----------------------------------------------------
         const accessToken = await getCookie("accessToken");
 
         if (!accessToken) {
-            // No token, no error - just not logged in
             return null;
         }
 
-        // Validate token format (JWT has 3 parts separated by dots)
         if (!accessToken.includes('.') || accessToken.split('.').length !== 3) {
             console.error("Invalid token format detected");
             // Delete malformed cookie to prevent loop
@@ -28,13 +23,9 @@ export const getUserInfo = async (): Promise<UserInfo | any> => {
             return null;
         }
 
-        // -----------------------------------------------------
-        // 2️⃣ Decode token and extract base user data
-        // -----------------------------------------------------
         let userInfoFromToken: any = null;
 
         try {
-            // Check if JWT_ACCESS_SECRET is available
             const jwtSecret = process.env.JWT_ACCESS_SECRET;
 
             if (!jwtSecret) {

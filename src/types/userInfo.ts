@@ -12,4 +12,7 @@ export interface UserInfo {
     admin?: any | null;
     trainer?: any | null;
     member?: any | null;
+    adminId?: string | null;
+    trainerId?: string | null;
+    memberId?: string | null;
 };

@@ -7,6 +7,7 @@ import { Menu, X, Dumbbell, LogOut, User, Settings, LayoutDashboard } from "luci
 import { Button } from "@/components/ui/button";
 import { logoutUser } from "@/services/auth/logoutUser";
 import Avatar from "./Avatar";
+import Logo from "./Logo";
 
 const navLinks = [
     { name: "Home", href: "/" },
@@ -80,18 +81,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16 lg:h-20">
                         {/* Logo */}
-                        <Link href="/" className="flex items-center space-x-2 group">
-                            <div className="p-2 bg-linear-to-r from-orange-400 to-red-600 rounded-lg group-hover:bg-red-700 transition-colors">
-                                <Dumbbell className="w-6 h-6 text-white" />
-                            </div>
-                            <span className="text-xl lg:text-2xl font-bold text-white">
-                                Gym
-                                <span className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent">
-                                    Flow
-                                </span>
-                            </span>
-
-                        </Link>
+                        <Logo/>
 
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center space-x-8">
@@ -178,7 +168,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
 
                         {/* Mobile Menu Button */}
                         <button
-                            className="md:hidden bg-red-600 text-white p-2 hover:bg-red-700 rounded-lg transition-colors z-50"
+                            className="md:hidden bg-linear-to-r from-orange-400 to-red-600 text-white p-2 hover:bg-red-700 rounded-lg transition-colors z-50"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
@@ -206,18 +196,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
 
                     {/* Drawer Header */}
                     <div className="flex items-center justify-between p-6 border-b border-gray-700">
-                        <Link
-                            href="/"
-                            className="flex items-center space-x-2"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            <div className="p-2 bg-red-600 rounded-lg">
-                                <Dumbbell className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="text-lg font-bold text-white">
-                                Gym<span className="text-red-600">Flow</span>
-                            </span>
-                        </Link>
+                        <Logo/>
 
                         <button
                             onClick={() => setIsMobileMenuOpen(false)}

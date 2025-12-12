@@ -14,10 +14,19 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { PageHeader, StatsCard } from "@/components/shared/PageComponents";
 
 import { TrainerService } from "@/services/trainer/trainer.service";
 import { Trainer, GetTrainersParams, Specialization } from "@/types/trainer.types";
+import { toast } from "sonner";
 
 export default function TrainersPage() {
     const [trainers, setTrainers] = useState<Trainer[]>([]);
@@ -26,6 +35,20 @@ export default function TrainersPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+
+    // Confirmation dialog state
+    const [confirmDialog, setConfirmDialog] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+        loading?: boolean;
+    }>({
+        open: false,
+        title: "",
+        description: "",
+        onConfirm: () => { },
+    });
 
     const [pagination, setPagination] = useState({
         page: 1,
@@ -46,13 +69,13 @@ export default function TrainersPage() {
         try {
             setLoading(true);
             setError(null);
-            
+
             console.log("Fetching trainers with params:", params);
-            
+
             const response = await TrainerService.getAllTrainers(params);
-            
+
             console.log("Trainers response:", response);
-            
+
             setTrainers(response.data);
             if (response.meta) setPagination(response.meta);
         } catch (err) {
@@ -108,31 +131,43 @@ export default function TrainersPage() {
     };
 
     const handleDelete = async (trainerId: string, trainerName: string) => {
-        if (!confirm(`Are you sure you want to delete trainer "${trainerName}"?`)) {
-            return;
-        }
+        setConfirmDialog({
+            open: true,
+            title: "Delete Trainer",
+            description: `Are you sure you want to delete trainer "${trainerName}"? This action cannot be undone and will permanently remove all trainer data.`,
+            onConfirm: async () => {
+                try {
+                    setConfirmDialog(prev => ({ ...prev, loading: true }));
+                    setDeleteLoading(trainerId);
+                    await TrainerService.deleteTrainer(trainerId);
 
-        try {
-            setDeleteLoading(trainerId);
-            await TrainerService.deleteTrainer(trainerId);
+                    // Refresh the list
+                    fetchTrainers({
+                        page: pagination.page,
+                        limit: pagination.limit,
+                        search: search || undefined,
+                        isAvailable,
+                        specialization,
+                        minRating,
+                    });
 
-            // Refresh the list
-            fetchTrainers({
-                page: pagination.page,
-                limit: pagination.limit,
-                search: search || undefined,
-                isAvailable,
-                specialization,
-                minRating,
-            });
+                    // Refresh stats
+                    fetchStats();
 
-            // Refresh stats
-            fetchStats();
-        } catch (error: any) {
-            alert(error.message || "Failed to delete trainer");
-        } finally {
-            setDeleteLoading(null);
-        }
+                    toast.success("Trainer deleted successfully");
+                    setConfirmDialog(prev => ({ ...prev, open: false, loading: false }));
+                } catch (error: any) {
+                    toast.error(
+                        process.env.NODE_ENV === "development"
+                            ? error.message
+                            : "Failed to delete trainer. Please try again."
+                    );
+                    setConfirmDialog(prev => ({ ...prev, loading: false }));
+                } finally {
+                    setDeleteLoading(null);
+                }
+            },
+        });
     };
 
     const formatDate = (date?: string | null) => {
@@ -161,6 +196,39 @@ export default function TrainersPage() {
 
     return (
         <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
+            {/* Confirmation Dialog */}
+            <Dialog open={confirmDialog.open} onOpenChange={(open) => !confirmDialog.loading && setConfirmDialog(prev => ({ ...prev, open }))}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{confirmDialog.title}</DialogTitle>
+                        <DialogDescription>{confirmDialog.description}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
+                            disabled={confirmDialog.loading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDialog.onConfirm}
+                            disabled={confirmDialog.loading}
+                        >
+                            {confirmDialog.loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                                    Processing...
+                                </>
+                            ) : (
+                                "Confirm"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {/* Header */}
             <PageHeader
                 title="Trainers"

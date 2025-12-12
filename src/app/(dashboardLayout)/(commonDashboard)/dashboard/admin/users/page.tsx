@@ -16,10 +16,19 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { PageHeader, StatsCard } from "@/components/shared/PageComponents";
 
 import { UserService } from "@/services/user/user.service";
 import { User, GetUsersParams, Role } from "@/types/user.types";
+import { toast } from "sonner";
 
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -29,6 +38,20 @@ export default function UsersPage() {
     const [error, setError] = useState<string | null>(null);
     const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
     const [statusLoading, setStatusLoading] = useState<string | null>(null);
+
+    // Confirmation dialog state
+    const [confirmDialog, setConfirmDialog] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+        loading?: boolean;
+    }>({
+        open: false,
+        title: "",
+        description: "",
+        onConfirm: () => { },
+    });
 
     const [pagination, setPagination] = useState({
         page: 1,
@@ -101,57 +124,82 @@ export default function UsersPage() {
 
     const handleToggleStatus = async (userId: string, userName: string, currentStatus: boolean) => {
         const action = currentStatus ? "deactivate" : "activate";
-        if (!confirm(`Are you sure you want to ${action} user "${userName}"?`)) {
-            return;
-        }
 
-        try {
-            setStatusLoading(userId);
-            await UserService.toggleUserStatus(userId, { isActive: !currentStatus });
+        setConfirmDialog({
+            open: true,
+            title: `${action.charAt(0).toUpperCase() + action.slice(1)} User`,
+            description: `Are you sure you want to ${action} user "${userName}"? ${currentStatus ? 'This will prevent the user from accessing the system.' : 'This will restore user access to the system.'}`,
+            onConfirm: async () => {
+                try {
+                    setConfirmDialog(prev => ({ ...prev, loading: true }));
+                    setStatusLoading(userId);
+                    await UserService.toggleUserStatus(userId, { isActive: !currentStatus });
 
-            // Refresh the list
-            fetchUsers({
-                page: pagination.page,
-                limit: pagination.limit,
-                search: search || undefined,
-                isActive,
-                role,
-            });
+                    // Refresh the list
+                    fetchUsers({
+                        page: pagination.page,
+                        limit: pagination.limit,
+                        search: search || undefined,
+                        isActive,
+                        role,
+                    });
 
-            // Refresh stats
-            fetchStats();
-        } catch (error: any) {
-            alert(error.message || "Failed to toggle user status");
-        } finally {
-            setStatusLoading(null);
-        }
+                    // Refresh stats
+                    fetchStats();
+
+                    toast.success(`User ${action}d successfully`);
+                    setConfirmDialog(prev => ({ ...prev, open: false, loading: false }));
+                } catch (error: any) {
+                    toast.error(
+                        process.env.NODE_ENV === "development"
+                            ? error.message
+                            : `Failed to ${action} user. Please try again.`
+                    );
+                    setConfirmDialog(prev => ({ ...prev, loading: false }));
+                } finally {
+                    setStatusLoading(null);
+                }
+            },
+        });
     };
 
     const handleDelete = async (userId: string, userName: string) => {
-        if (!confirm(`Are you sure you want to delete user "${userName}"?`)) {
-            return;
-        }
+        setConfirmDialog({
+            open: true,
+            title: "Delete User",
+            description: `Are you sure you want to delete user "${userName}"? This action cannot be undone and will permanently remove all user data.`,
+            onConfirm: async () => {
+                try {
+                    setConfirmDialog(prev => ({ ...prev, loading: true }));
+                    setDeleteLoading(userId);
+                    await UserService.deleteUser(userId);
 
-        try {
-            setDeleteLoading(userId);
-            await UserService.deleteUser(userId);
+                    // Refresh the list
+                    fetchUsers({
+                        page: pagination.page,
+                        limit: pagination.limit,
+                        search: search || undefined,
+                        isActive,
+                        role,
+                    });
 
-            // Refresh the list
-            fetchUsers({
-                page: pagination.page,
-                limit: pagination.limit,
-                search: search || undefined,
-                isActive,
-                role,
-            });
+                    // Refresh stats
+                    fetchStats();
 
-            // Refresh stats
-            fetchStats();
-        } catch (error: any) {
-            alert(error.message || "Failed to delete user");
-        } finally {
-            setDeleteLoading(null);
-        }
+                    toast.success("User deleted successfully");
+                    setConfirmDialog(prev => ({ ...prev, open: false, loading: false }));
+                } catch (error: any) {
+                    toast.error(
+                        process.env.NODE_ENV === "development"
+                            ? error.message
+                            : "Failed to delete user. Please try again."
+                    );
+                    setConfirmDialog(prev => ({ ...prev, loading: false }));
+                } finally {
+                    setDeleteLoading(null);
+                }
+            },
+        });
     };
 
     const formatDate = (date?: string | null) => {
@@ -189,6 +237,39 @@ export default function UsersPage() {
                 title="User Management"
                 description="Manage all system users, roles, and permissions"
             />
+
+            {/* Confirmation Dialog */}
+            <Dialog open={confirmDialog.open} onOpenChange={(open) => !confirmDialog.loading && setConfirmDialog(prev => ({ ...prev, open }))}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{confirmDialog.title}</DialogTitle>
+                        <DialogDescription>{confirmDialog.description}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
+                            disabled={confirmDialog.loading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDialog.onConfirm}
+                            disabled={confirmDialog.loading}
+                        >
+                            {confirmDialog.loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                                    Processing...
+                                </>
+                            ) : (
+                                "Confirm"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Stats */}
             {stats && (

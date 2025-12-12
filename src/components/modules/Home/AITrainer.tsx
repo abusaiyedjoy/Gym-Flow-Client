@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ScrollIcon, Search, Sparkles } from "lucide-react";
+import Router from 'next/router';
 
 const steps = [
   {

@@ -77,7 +77,6 @@ export default function TrainerContent() {
       }
     });
 
-  const getGradient = (index: number) => gradients[index % gradients.length];
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });

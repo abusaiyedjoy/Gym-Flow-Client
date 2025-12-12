@@ -17,7 +17,6 @@ export const registerUser = async (_currentState: any, formData: any): Promise<a
             password: formData.get('password'),
             confirmPassword: formData.get('confirmPassword'),
         }
-        console.log("Register Payload:", payload);
 
         if (zodValidator(payload, registerValidationSchema).success === false) {
             return zodValidator(payload, registerValidationSchema);

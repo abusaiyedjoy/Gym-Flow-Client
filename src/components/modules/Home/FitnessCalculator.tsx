@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { X, Download, Activity, Heart, Droplet, Target, TrendingUp, Scale, Ruler, Calendar, User, HeartPlus } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface FitnessResults {
   bmi: number;
@@ -109,7 +110,7 @@ const FitnessCalculator: React.FC = () => {
     const ageYears = parseFloat(age);
 
     if (!weightValue || !heightValue || !ageYears) {
-      alert('Please fill in all fields');
+      toast.error('Please fill in all required fields with valid numbers.');
       return;
     }
 
@@ -479,7 +480,6 @@ const downloadReport = () => {
             <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-red-600 p-6 flex items-center justify-between rounded-t-2xl">
               <div>
                 <h2 className="text-3xl font-bold text-white">Your Fitness Report</h2>
-                <p className="text-orange-100 text-sm mt-1">Personalized health insights</p>
               </div>
               <button
                 onClick={() => setShowModal(false)}
@@ -555,31 +555,6 @@ const downloadReport = () => {
                       <span className="text-gray-400">Fats</span>
                       <span className="text-white font-semibold">{results.macros.fats}g</span>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Macro Distribution Visual */}
-              <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 mb-8">
-                <h3 className="text-lg font-bold text-white mb-4">Macro Distribution</h3>
-                <div className="flex gap-2 h-8 rounded-lg overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold"
-                    style={{ width: '30%' }}
-                  >
-                    Protein
-                  </div>
-                  <div 
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold"
-                    style={{ width: '50%' }}
-                  >
-                    Carbs
-                  </div>
-                  <div 
-                    className="bg-gradient-to-r from-cyan-500 to-cyan-600 flex items-center justify-center text-white text-xs font-bold"
-                    style={{ width: '20%' }}
-                  >
-                    Fats
                   </div>
                 </div>
               </div>

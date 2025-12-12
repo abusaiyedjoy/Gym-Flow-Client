@@ -9,6 +9,7 @@ import {
     Phone,
     MapPin,
 } from "lucide-react";
+import Logo from "./Logo";
 
 const footerLinks = {
     company: [
@@ -46,15 +47,8 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
                     {/* Brand Section */}
                     <div className="lg:col-span-2">
-                        <Link href="/" className="flex items-center space-x-2 mb-4">
-                            <div className="p-2 bg-red-600 rounded-lg">
-                                <Dumbbell className="w-6 h-6 text-white" />
-                            </div>
-                            <span className="text-2xl font-bold text-white">
-                                Gym<span className="text-red-600">Flow</span>
-                            </span>
-                        </Link>
-                        <p className="text-gray-400 mb-6 max-w-md">
+                        <Logo />
+                        <p className="text-gray-400 mt-3 mb-6 max-w-md">
                             Transform your fitness journey with GymFlow. Professional gym
                             management made simple with cutting-edge technology and
                             expert guidance.

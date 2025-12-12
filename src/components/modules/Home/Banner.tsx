@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 const slides = [
     {
         id: 1,
-        image: '/images/banner1.jpg',
+        image: '/Images/banner1.jpg',
         badge: 'Transform Your Body',
         title: 'Build Your Dream Physique',
         subtitle: 'Unlock your strength, boost endurance, and stay committed with our personalized fitness plans, tailored to meet your individual goals.',
@@ -16,7 +16,7 @@ const slides = [
     },
     {
         id: 2,
-        image: '/images/banner2.jpg',
+        image: '/Images/banner2.jpg',
         badge: 'Premium Facilities',
         title: 'Redefine Your Lifestyle',
         subtitle: 'Start your transformation today. From weight loss to muscle building, we support you at every step with expert advice and top-notch facilities.',
@@ -24,7 +24,7 @@ const slides = [
     },
     {
         id: 3,
-        image: '/images/banner3.jpg',
+        image: '/Images/banner3.jpg',
         badge: 'Group Classes',
         title: 'Build a Healthy & Fit Body',
         subtitle: 'GymFlow is more than a gym — it’s your partner in wellness. Our programs are designed to fit all fitness levels and deliver lasting results. Let’s shape a better you.',
@@ -32,7 +32,7 @@ const slides = [
     },
     {
         id: 3,
-        image: '/images/banner6.jpg',
+        image: '/Images/banner6.jpg',
         badge: 'Transform Your Body',
         title: 'Build Your Dream Physique',
         subtitle: 'Unlock your strength, boost endurance, and stay committed with our personalized fitness plans, tailored to meet your individual goals.',
@@ -40,7 +40,7 @@ const slides = [
     },
     {
         id: 3,
-        image: '/images/banner7.jpg',
+        image: '/Images/banner7.jpg',
         badge: 'Premium Facilities',
         title: 'Redefine Your Lifestyle',
         subtitle: 'Start your transformation today. From weight loss to muscle building, we support you at every step with expert advice and top-notch facilities.',

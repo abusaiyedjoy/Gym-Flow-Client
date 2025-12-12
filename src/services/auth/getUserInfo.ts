@@ -107,6 +107,11 @@ export const getUserInfo = async (): Promise<UserInfo | any> => {
             admin: data.admin ?? null,
             trainer: data.trainer ?? null,
             member: data.member ?? null,
+
+            // IDs for easier access
+            adminId: data.admin?.id ?? null,
+            trainerId: data.trainer?.id ?? null,
+            memberId: data.member?.id ?? null,
         };
 
         console.log("User info retrieved successfully:", { id: normalizedUser.id, role: normalizedUser.role });

@@ -52,7 +52,7 @@ export default function Error({
           <Button
             onClick={reset}
             size="lg"
-            className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-6 text-lg group"
+            className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-6 text-lg group cursor-pointer"
           >
             <RefreshCcw className="mr-2 w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
             Try Again
@@ -61,7 +61,7 @@ export default function Error({
           <Button
             size="lg"
             variant="outline"
-            className="border-2 border-zinc-700 text-white hover:bg-zinc-800 px-8 py-6 text-lg"
+            className="border-2 cursor-pointer bg-zinc-200 px-8 py-6 text-lg"
             onClick={() => (window.location.href = "/")}
           >
             <Home className="mr-2 w-5 h-5" />

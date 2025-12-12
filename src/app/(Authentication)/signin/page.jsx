@@ -2,30 +2,51 @@
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { Dumbbell } from "lucide-react";
 import { loginUser } from "@/services/auth/loginUser";
 import { useRouter } from "next/navigation";
+import Logo from "@/components/shared/Logo";
+import { toast } from "sonner";
 
 const SignIn = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [focusedField, setFocusedField] = useState(null);
-  const [serverError, setServerError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const onSubmit = async (data) => {
-    setServerError("");
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append("email", data.email);
     formData.append("password", data.password);
-    formData.append("redirect", "/dashboard"); // optional
+    formData.append("redirect", "/dashboard");
 
-    const response = await loginUser(null, formData);
+    try {
+      const response = await loginUser(null, formData);
 
-    if (response?.success) {
-      router.push(response.redirectTo || "/dashboard");
-    } else {
-      setServerError(response?.message || "Login failed");
+      if (response?.success) {
+        toast.success("Login successful!", {
+          description: "Redirecting to dashboard...",
+          duration: 3000,
+        });
+        
+        setTimeout(() => {
+          router.push(response.redirectTo || "/dashboard");
+        }, 500);
+      } else {
+        toast.error("Login failed", {
+          description: response?.message || "Invalid email or password",
+          duration: 4000,
+        });
+      }
+    } catch (error) {
+      toast.error("Something went wrong", {
+        description: "Please try again later",
+        duration: 4000,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -42,28 +63,20 @@ const SignIn = () => {
 
       {/* Right Side - Form Section */}
       <div className="relative w-full lg:w-1/2 flex flex-col justify-center items-center px-6 md:px-10 py-8 bg-linear-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[40px_40px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+        
         {/* Logo */}
-        <Link href="/" className="absolute top-12 left-12 flex items-center space-x-2 group">
-          <div className="p-2 bg-red-600 rounded-lg group-hover:bg-red-700 transition-colors">
-            <Dumbbell className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-xl lg:text-2xl font-bold text-white">
-            Gym<span className="text-red-600">Flow</span>
-          </span>
-        </Link>
+        <div className="absolute top-6 left-6">
+          <Logo />
+        </div>
+
         {/* Header */}
-        <h2 className="text-white text-3xl font-bold mb-2 text-center">
-          Welcome Back!
+        <h2 className="text-white text-3xl font-bold mb-2 text-center z-50">
+          Welcome <span className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent">Back!</span>
         </h2>
-        <p className="text-gray-400 mb-6 text-center">
+        <p className="text-gray-400 mb-6 text-center z-50">
           Please sign in to continue.
         </p>
-
-        {/* 🔥 Show server errors */}
-        {serverError && (
-          <p className="text-red-500 mb-4 text-center">{serverError}</p>
-        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md z-50">
@@ -73,23 +86,33 @@ const SignIn = () => {
               Your Email
             </label>
             <div
-              className={`w-full p-3 rounded flex items-center border-2 ${focusedField === "email"
-                ? "border-l-4 border-primary bg-gray-700"
-                : "border-gray-700 bg-gray-800"
-                }`}
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
+                focusedField === "email"
+                  ? "border-l-4 border-orange-500 bg-gray-700"
+                  : "border-gray-700 bg-gray-800"
+              }`}
             >
               <input
                 type="email"
                 id="email"
-                {...register("email", { required: "Email is required" })}
+                {...register("email", { 
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Invalid email address"
+                  }
+                })}
                 placeholder="Enter your email"
                 className="w-full bg-transparent outline-none text-white"
                 onFocus={() => setFocusedField("email")}
                 onBlur={() => setFocusedField(null)}
+                disabled={isLoading}
               />
             </div>
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              <p className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -99,13 +122,14 @@ const SignIn = () => {
               Password
             </label>
             <div
-              className={`w-full p-3 rounded flex items-center border-2 ${focusedField === "password"
-                ? "border-l-4 border-primary bg-gray-700"
-                : "border-gray-700 bg-gray-800"
-                }`}
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
+                focusedField === "password"
+                  ? "border-l-4 border-orange-500 bg-gray-700"
+                  : "border-gray-700 bg-gray-800"
+              }`}
             >
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 {...register("password", {
                   required: "Password is required",
@@ -118,26 +142,74 @@ const SignIn = () => {
                 className="w-full bg-transparent outline-none text-white"
                 onFocus={() => setFocusedField("password")}
                 onBlur={() => setFocusedField(null)}
+                disabled={isLoading}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="ml-2 text-gray-400 hover:text-gray-300 focus:outline-none transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                )}
+              </button>
             </div>
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
+              <p className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm mt-1">
                 {errors.password.message}
               </p>
             )}
           </div>
 
           {/* Remember Me & Forgot Password */}
-          <div className="flex justify-between items-center mb-4">
-            <label className="flex items-center text-gray-400 text-sm">
+          <div className="flex justify-between items-center mb-6">
+            <label className="flex items-center text-gray-400 text-sm cursor-pointer">
               <input
                 type="checkbox"
-                className="mr-2 accent-primary"
+                className="mr-2 accent-orange-400 cursor-pointer"
                 {...register("rememberMe")}
+                disabled={isLoading}
               />
               Remember Me
             </label>
-            <Link href="/forgot-password" className="text-primary text-sm hover:underline">
+            <Link 
+              href="/forgot-password" 
+              className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm hover:underline"
+            >
               Forgot Password?
             </Link>
           </div>
@@ -145,16 +217,30 @@ const SignIn = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-primary py-3 text-white font-bold rounded hover:bg-[#b90101ce] transition duration-300"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-orange-400 to-red-600 py-3 text-white font-bold rounded cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Sign In
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Signing In...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
 
         {/* Don't have an account? */}
-        <p className="text-gray-400 mt-5 text-center z-50">
-          Don’t have an account?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
+        <p className="text-gray-400 mt-6 text-center z-50">
+          Don't have an account?{" "}
+          <Link 
+            href="/signup" 
+            className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent hover:underline"
+          >
             Register
           </Link>
         </p>

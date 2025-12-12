@@ -1,73 +1,142 @@
 "use client";
 
-import { useState } from "react";
-import { User, Mail, Phone, Award, Dumbbell, Star, Calendar, Edit } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Mail, Phone, Award, Dumbbell, Star, Calendar, Edit, Camera, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/shared/PageComponents";
+import { TrainerService } from "@/services/trainer/trainer.service";
+import { UserService } from "@/services/user/user.service";
+import { getMe } from "@/services/auth/auth.service";
+import { Trainer, DayOfWeek } from "@/types/trainer.types";
+import { toast } from "sonner";
 import Link from "next/link";
 
-interface TrainerProfile {
-    id: string;
-    employeeId: string;
-    name: string;
-    email: string;
-    phone: string;
-    profileImage?: string;
-    bio: string;
-    specialization: string[];
-    certifications: string[];
-    experienceYears: number;
-    languages: string[];
-    rating: number;
-    reviewCount: number;
-    totalClients: number;
-    currentClients: number;
-    maxCapacity: number;
-    successRate: number;
-    sessionsCompleted: number;
-    availability: string[];
-    hourlyRate: number;
-    joinedDate: string;
-    isAvailable: boolean;
-}
+const formatSpecialization = (spec: string) => {
+    return spec.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ');
+};
 
-const mockProfile: TrainerProfile = {
-    id: "T-001",
-    employeeId: "EMP-2023-1001",
-    name: "David Martinez",
-    email: "david.martinez@gym.com",
-    phone: "+1 234 567 8900",
-    profileImage: "/trainers/david.jpg",
-    bio: "Certified personal trainer with 8 years of experience in strength training and body transformation. Passionate about helping clients achieve their fitness goals through personalized workout plans and nutritional guidance. Specialized in weight loss, muscle gain, and athletic performance enhancement.",
-    specialization: ["Strength Training", "Weight Loss", "Muscle Gain", "Athletic Performance"],
-    certifications: [
-        "NASM Certified Personal Trainer",
-        "Precision Nutrition Level 1",
-        "CrossFit Level 2 Trainer",
-        "Sports Nutrition Specialist",
-        "TRX Suspension Training",
-    ],
-    experienceYears: 8,
-    languages: ["English", "Spanish"],
-    rating: 4.9,
-    reviewCount: 127,
-    totalClients: 45,
-    currentClients: 42,
-    maxCapacity: 50,
-    successRate: 92.5,
-    sessionsCompleted: 1240,
-    availability: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    hourlyRate: 80,
-    joinedDate: "2019-06-15",
-    isAvailable: true,
+const getDayName = (day: DayOfWeek): string => {
+    const dayMap: Record<DayOfWeek, string> = {
+        [DayOfWeek.SUNDAY]: "Sunday",
+        [DayOfWeek.MONDAY]: "Monday",
+        [DayOfWeek.TUESDAY]: "Tuesday",
+        [DayOfWeek.WEDNESDAY]: "Wednesday",
+        [DayOfWeek.THURSDAY]: "Thursday",
+        [DayOfWeek.FRIDAY]: "Friday",
+        [DayOfWeek.SATURDAY]: "Saturday",
+    };
+    return dayMap[day];
 };
 
 export default function TrainerProfilePage() {
-    const [profile] = useState<TrainerProfile>(mockProfile);
+    const [profile, setProfile] = useState<Trainer | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            setLoading(true);
+            const response = await getMe();
+
+            if (!response.success || !response.data) {
+                toast.error("Failed to fetch user information");
+                return;
+            }
+
+            const userData = response.data;
+
+            if (!userData.trainer?.id) {
+                toast.error("Trainer profile not found");
+                return;
+            }
+
+            const trainerData = await TrainerService.getTrainerById(userData.trainer.id);
+            setProfile(trainerData);
+        } catch (error: any) {
+            console.error("Failed to fetch profile:", error);
+            toast.error(error.message || "Failed to load profile");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error("Please select an image file");
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image size should be less than 5MB");
+            return;
+        }
+
+        try {
+            setUploading(true);
+            const response = await getMe();
+
+            if (!response.success || !response.data?.id) {
+                toast.error("User not found");
+                return;
+            }
+
+            // Upload avatar
+            const result = await UserService.uploadAvatar(response.data.id, file);
+
+            // Update profile with new image
+            if (profile) {
+                setProfile({
+                    ...profile,
+                    user: {
+                        ...profile.user,
+                        profileImage: result.url
+                    }
+                });
+            }
+
+            toast.success("Profile picture updated successfully");
+        } catch (error: any) {
+            console.error("Failed to upload avatar:", error);
+            toast.error(error.message || "Failed to upload profile picture");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (!profile) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+                <p className="text-muted-foreground">Failed to load profile</p>
+                <Button onClick={fetchProfile}>Retry</Button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -76,27 +145,50 @@ export default function TrainerProfilePage() {
                 description="Manage your professional profile and credentials"
             />
 
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+            />
+
             {/* Profile Header Card */}
             <Card className="border-primary/20">
                 <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                        <Avatar className="h-32 w-32">
-                            <AvatarImage src={profile.profileImage} alt={profile.name} />
-                            <AvatarFallback className="text-3xl">
-                                {profile.name.split(" ").map((n) => n[0]).join("")}
-                            </AvatarFallback>
-                        </Avatar>
+                        <div className="relative">
+                            <Avatar className="h-32 w-32">
+                                <AvatarImage src={profile.user.profileImage || undefined} alt={profile.user.name} />
+                                <AvatarFallback className="text-3xl">
+                                    {profile.user.name.split(" ").map((n: string) => n[0]).join("")}
+                                </AvatarFallback>
+                            </Avatar>
+                            <Button
+                                size="icon"
+                                variant="secondary"
+                                className="absolute bottom-0 right-0 rounded-full h-10 w-10"
+                                onClick={handleAvatarClick}
+                                disabled={uploading}
+                            >
+                                {uploading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Camera className="h-4 w-4" />
+                                )}
+                            </Button>
+                        </div>
 
                         <div className="flex-1 text-center md:text-left space-y-4">
                             <div>
-                                <h2 className="text-3xl font-bold">{profile.name}</h2>
+                                <h2 className="text-3xl font-bold">{profile.user.name}</h2>
                                 <p className="text-muted-foreground mt-1">Professional Fitness Trainer</p>
                             </div>
 
                             <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                                {profile.specialization.map((spec) => (
-                                    <Badge key={spec} className="bg-primary/10 text-primary">
-                                        {spec}
+                                {profile.specializations?.map((spec) => (
+                                    <Badge key={spec.id} className="bg-primary/10 text-primary">
+                                        {formatSpecialization(spec.specialization)}
                                     </Badge>
                                 ))}
                             </div>
@@ -108,7 +200,7 @@ export default function TrainerProfilePage() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                    <span>{profile.rating} ({profile.reviewCount} reviews)</span>
+                                    <span>{profile.rating.toFixed(1)} ({profile.reviewCount} reviews)</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Dumbbell className="h-4 w-4 text-primary" />
@@ -150,8 +242,8 @@ export default function TrainerProfilePage() {
                         <div className="text-center space-y-2">
                             <Calendar className="h-8 w-8 mx-auto text-primary" />
                             <div>
-                                <p className="text-3xl font-bold">{profile.sessionsCompleted}</p>
-                                <p className="text-sm text-muted-foreground">Sessions Completed</p>
+                                <p className="text-3xl font-bold">{profile._count?.workoutPlans || 0}</p>
+                                <p className="text-sm text-muted-foreground">Workout Plans</p>
                             </div>
                         </div>
                     </CardContent>
@@ -161,7 +253,7 @@ export default function TrainerProfilePage() {
                         <div className="text-center space-y-2">
                             <Star className="h-8 w-8 mx-auto text-yellow-400 fill-yellow-400" />
                             <div>
-                                <p className="text-3xl font-bold">{profile.rating}</p>
+                                <p className="text-3xl font-bold">{profile.rating.toFixed(1)}</p>
                                 <p className="text-sm text-muted-foreground">Average Rating</p>
                             </div>
                         </div>
@@ -183,7 +275,7 @@ export default function TrainerProfilePage() {
                         <div className="text-center space-y-2">
                             <div className="h-8 w-8 mx-auto text-primary flex items-center justify-center font-bold text-lg">%</div>
                             <div>
-                                <p className="text-3xl font-bold">{profile.successRate}%</p>
+                                <p className="text-3xl font-bold">{profile.successRate.toFixed(1)}%</p>
                                 <p className="text-sm text-muted-foreground">Success Rate</p>
                             </div>
                         </div>
@@ -205,7 +297,7 @@ export default function TrainerProfilePage() {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div>
-                                <p className="text-muted-foreground">{profile.bio}</p>
+                                <p className="text-muted-foreground">{profile.bio || "No bio available"}</p>
                             </div>
 
                             <div className="grid gap-4 md:grid-cols-2">
@@ -214,11 +306,11 @@ export default function TrainerProfilePage() {
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2 text-sm">
                                             <Mail className="h-4 w-4 text-muted-foreground" />
-                                            <span>{profile.email}</span>
+                                            <span>{profile.user.email}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-sm">
                                             <Phone className="h-4 w-4 text-muted-foreground" />
-                                            <span>{profile.phone}</span>
+                                            <span>{profile.user.phone || "Not provided"}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -232,7 +324,7 @@ export default function TrainerProfilePage() {
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-muted-foreground">Joined Date:</span>
-                                            <span className="font-medium">{new Date(profile.joinedDate).toLocaleDateString()}</span>
+                                            <span className="font-medium">{new Date(profile.joinDate).toLocaleDateString()}</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-muted-foreground">Languages:</span>
@@ -262,10 +354,20 @@ export default function TrainerProfilePage() {
                                 </div>
 
                                 <div>
-                                    <h4 className="font-semibold mb-3">Rate</h4>
-                                    <div className="text-sm">
-                                        <p className="text-2xl font-bold text-primary">${profile.hourlyRate}</p>
-                                        <p className="text-muted-foreground">per session</p>
+                                    <h4 className="font-semibold mb-3">Experience</h4>
+                                    <div className="text-sm space-y-2">
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Total Clients:</span>
+                                            <span className="font-medium">{profile.totalClients}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Success Rate:</span>
+                                            <span className="font-medium">{profile.successRate.toFixed(1)}%</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Reviews:</span>
+                                            <span className="font-medium">{profile.reviewCount}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -308,29 +410,38 @@ export default function TrainerProfilePage() {
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-3">
-                                {[
-                                    "Monday",
-                                    "Tuesday",
-                                    "Wednesday",
-                                    "Thursday",
-                                    "Friday",
-                                    "Saturday",
-                                    "Sunday",
-                                ].map((day) => {
-                                    const isAvailable = profile.availability.includes(day);
+                                {Object.values(DayOfWeek).map((day) => {
+                                    const dayAvailability = profile.availability?.filter(
+                                        (avail) => avail.dayOfWeek === day
+                                    );
+                                    const isAvailable = dayAvailability && dayAvailability.length > 0;
+
                                     return (
                                         <div
                                             key={day}
-                                            className={`flex items-center justify-between p-4 border rounded-lg ${isAvailable ? "bg-green-500/5 border-green-500/20" : "opacity-50"
+                                            className={`flex flex-col p-4 border rounded-lg ${isAvailable
+                                                ? "bg-green-500/5 border-green-500/20"
+                                                : "opacity-50"
                                                 }`}
                                         >
-                                            <span className="font-semibold">{day}</span>
-                                            <Badge
-                                                variant={isAvailable ? "default" : "secondary"}
-                                                className={isAvailable ? "bg-green-500" : ""}
-                                            >
-                                                {isAvailable ? "Available" : "Not Available"}
-                                            </Badge>
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-semibold">{getDayName(day)}</span>
+                                                <Badge
+                                                    variant={isAvailable ? "default" : "secondary"}
+                                                    className={isAvailable ? "bg-green-500" : ""}
+                                                >
+                                                    {isAvailable ? "Available" : "Not Available"}
+                                                </Badge>
+                                            </div>
+                                            {isAvailable && dayAvailability && (
+                                                <div className="mt-2 text-sm text-muted-foreground">
+                                                    {dayAvailability.map((slot, idx) => (
+                                                        <div key={idx}>
+                                                            {slot.startTime} - {slot.endTime}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}

@@ -7,23 +7,13 @@ import Image from 'next/image';
 
 const exampleTrainers = [
   {
-    name: "Marcus Rodriguez",
-    specialty: "Bodybuilding & Strength",
-    rating: 4.8,
-    reviews: 85,
-    experienceYears: 7,
-    clients: 150,
-    imageUrl: "/Images/profile1.jpg",
-    tags: ["Functional Training", "Nutrition", "Weight Loss"],
-  },
-  {
     name: "Sarah Kim",
     specialty: "Yoga & Pilates",
     rating: 4.9,
     reviews: 92,
     experienceYears: 5,
     clients: 200,
-    imageUrl: "/Images/profile1.jpg",
+    imageUrl: "/Images/profile2.jpg",
     tags: ["Flexibility", "Mindfulness", "Stress Relief"],
   },
   {
@@ -33,7 +23,7 @@ const exampleTrainers = [
     reviews: 78,
     experienceYears: 6,
     clients: 120,
-    imageUrl: "/Images/profile1.jpg",
+    imageUrl: "/Images/profile3.jpg",
     tags: ["Cardio", "Strength", "Endurance"],
   },
   {
@@ -53,7 +43,7 @@ const exampleTrainers = [
     reviews: 95,
     experienceYears: 9,
     clients: 140,
-    imageUrl: "/Images/profile1.jpg",
+    imageUrl: "/Images/profile2.jpg",
     tags: ["Athletic Training", "Speed", "Agility"],
   }
 ];
@@ -97,7 +87,7 @@ export default function ExpertTrainers() {
       {/* Profile Image */}
       <div className="relative w-full h-64 overflow-hidden bg-zinc-200 dark:bg-zinc-800">
         <Image
-          src={trainer?.profileImage || "/Images/profile2.jpg"}
+          src={trainer?.imageUrl || "/Images/profile2.jpg"}
           alt={trainer?.name}
           fill
           className="object-cover object-center group-hover:scale-105 transition-all duration-500"

@@ -14,10 +14,19 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { PageHeader, StatsCard } from "@/components/shared/PageComponents";
 
 import { MemberService } from "@/services/member/member.service";
 import { Member, GetMembersParams, WorkoutExperience } from "@/types/member.types";
+import { toast } from "sonner";
 
 export default function MembersPage() {
     const [members, setMembers] = useState<Member[]>([]);
@@ -26,6 +35,20 @@ export default function MembersPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+
+    // Confirmation dialog state
+    const [confirmDialog, setConfirmDialog] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+        loading?: boolean;
+    }>({
+        open: false,
+        title: "",
+        description: "",
+        onConfirm: () => { },
+    });
 
     const [pagination, setPagination] = useState({
         page: 1,
@@ -99,30 +122,42 @@ export default function MembersPage() {
     };
 
     const handleDelete = async (memberId: string, memberName: string) => {
-        if (!confirm(`Are you sure you want to delete member "${memberName}"?`)) {
-            return;
-        }
+        setConfirmDialog({
+            open: true,
+            title: "Delete Member",
+            description: `Are you sure you want to delete member "${memberName}"? This action cannot be undone and will permanently remove all member data.`,
+            onConfirm: async () => {
+                try {
+                    setConfirmDialog(prev => ({ ...prev, loading: true }));
+                    setDeleteLoading(memberId);
+                    await MemberService.deleteMember(memberId);
 
-        try {
-            setDeleteLoading(memberId);
-            await MemberService.deleteMember(memberId);
+                    // Refresh the list
+                    fetchMembers({
+                        page: pagination.page,
+                        limit: pagination.limit,
+                        search: search || undefined,
+                        isActive,
+                        workoutExperience,
+                    });
 
-            // Refresh the list
-            fetchMembers({
-                page: pagination.page,
-                limit: pagination.limit,
-                search: search || undefined,
-                isActive,
-                workoutExperience,
-            });
+                    // Refresh stats
+                    fetchStats();
 
-            // Refresh stats
-            fetchStats();
-        } catch (error: any) {
-            alert(error.message || "Failed to delete member");
-        } finally {
-            setDeleteLoading(null);
-        }
+                    toast.success("Member deleted successfully");
+                    setConfirmDialog(prev => ({ ...prev, open: false, loading: false }));
+                } catch (error: any) {
+                    toast.error(
+                        process.env.NODE_ENV === "development"
+                            ? error.message
+                            : "Failed to delete member. Please try again."
+                    );
+                    setConfirmDialog(prev => ({ ...prev, loading: false }));
+                } finally {
+                    setDeleteLoading(null);
+                }
+            },
+        });
     };
 
     const formatDate = (date?: string | null) => {
@@ -161,6 +196,39 @@ export default function MembersPage() {
 
     return (
         <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
+            {/* Confirmation Dialog */}
+            <Dialog open={confirmDialog.open} onOpenChange={(open) => !confirmDialog.loading && setConfirmDialog(prev => ({ ...prev, open }))}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{confirmDialog.title}</DialogTitle>
+                        <DialogDescription>{confirmDialog.description}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
+                            disabled={confirmDialog.loading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDialog.onConfirm}
+                            disabled={confirmDialog.loading}
+                        >
+                            {confirmDialog.loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                                    Processing...
+                                </>
+                            ) : (
+                                "Confirm"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {/* Header */}
             <PageHeader
                 title="Members"

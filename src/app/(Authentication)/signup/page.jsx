@@ -1,10 +1,11 @@
 "use client";
-import { Dumbbell } from "lucide-react";
+import Logo from "@/components/shared/Logo";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { registerUser } from "@/services/auth/registerUser";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const SignUp = () => {
   const {
@@ -15,13 +16,14 @@ const SignUp = () => {
     formState: { errors },
   } = useForm();
 
-  const [serverError, setServerError] = useState("");
-  const [serverSuccess, setServerSuccess] = useState("");
+  const [focusedField, setFocusedField] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const onSubmit = async (data) => {
-    setServerError("");
-    setServerSuccess("");
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append("name", data.name);
@@ -30,16 +32,32 @@ const SignUp = () => {
     formData.append("password", data.password);
     formData.append("confirmPassword", data.confirmPassword);
 
+    try {
+      const res = await registerUser(null, formData);
 
-    // Call server action with FormData (registerUser expects FormData)
-    const res = await registerUser(null, formData);
-
-    if (res?.success) {
-      setServerSuccess("Registration successful! Redirecting...");
-      router.push("/dashboard");
-      reset();
-    } else {
-      setServerError(res?.message || "Registration failed. Please try again.");
+      if (res?.success) {
+        toast.success("Registration successful!", {
+          description: "Redirecting to dashboard...",
+          duration: 3000,
+        });
+        
+        setTimeout(() => {
+          router.push("/dashboard");
+          reset();
+        }, 500);
+      } else {
+        toast.error("Registration failed", {
+          description: res?.message || "Please try again later",
+          duration: 4000,
+        });
+      }
+    } catch (error) {
+      toast.error("Something went wrong", {
+        description: "Please try again later",
+        duration: 4000,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,122 +74,294 @@ const SignUp = () => {
 
       {/* Right Side - Form Section */}
       <div className="relative w-full lg:w-1/2 flex flex-col justify-center items-center px-6 md:px-10 py-8 bg-linear-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+        
         {/* Logo */}
-        <Link href="/" className="absolute top-12 left-12 flex items-center space-x-2 group">
-          <div className="p-2 bg-red-600 rounded-lg group-hover:bg-red-700 transition-colors">
-            <Dumbbell className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-xl lg:text-2xl font-bold text-white">
-            Gym<span className="text-red-600">Flow</span>
-          </span>
-        </Link>
+        <div className="absolute top-6 left-6">
+          <Logo />
+        </div>
 
         {/* Header */}
-        <h2 className="text-white text-3xl font-bold mb-2 text-center">Good Morning!</h2>
-        <p className="text-gray-400 mb-6 text-center">Thank you for joining us!</p>
-
-        {/* 🔥 Server errors */}
-        {serverError && <p className="text-red-500 mb-4 text-center">{serverError}</p>}
-        {serverSuccess && <p className="text-green-500 mb-4 text-center">{serverSuccess}</p>}
+        <h2 className="text-white text-3xl font-bold mb-2 text-center z-50">
+          Good <span className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent">Morning!</span>
+        </h2>
+        <p className="text-gray-400 mb-6 text-center z-50">Thank you for joining us!</p>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md z-50 relative">
-
           {/* Name */}
           <div className="mb-4">
             <label className="block text-gray-500 mb-1">Full Name*</label>
-            <input
-              type="text"
-              {...register("name", { required: "Name is required" })}
-              placeholder="Enter your full name"
-              className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"
-            />
-            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+            <div
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
+                focusedField === "name"
+                  ? "border-l-4 border-orange-500 bg-gray-700"
+                  : "border-gray-700 bg-gray-800"
+              }`}
+            >
+              <input
+                type="text"
+                {...register("name", { required: "Name is required" })}
+                placeholder="Enter your full name"
+                className="w-full bg-transparent outline-none text-white"
+                onFocus={() => setFocusedField("name")}
+                onBlur={() => setFocusedField(null)}
+                disabled={isLoading}
+              />
+            </div>
+            {errors.name && (
+              <p className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm mt-1">
+                {errors.name.message}
+              </p>
+            )}
           </div>
 
           {/* Phone */}
           <div className="mb-4">
             <label className="block text-gray-500 mb-1">Phone Number</label>
-            <input
-              type="tel"
-              {...register("phone", {
-                pattern: {
-                  value: /^(?:\+?88)?01[3-9]\d{8}$/,
-                  message: "Please enter a valid Bangladeshi phone number",
-                },
-              })}
-              placeholder="Enter your phone number (optional)"
-              className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"
-            />
-            {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+            <div
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
+                focusedField === "phone"
+                  ? "border-l-4 border-orange-500 bg-gray-700"
+                  : "border-gray-700 bg-gray-800"
+              }`}
+            >
+              <input
+                type="tel"
+                {...register("phone", {
+                  pattern: {
+                    value: /^(?:\+?88)?01[3-9]\d{8}$/,
+                    message: "Please enter a valid Bangladeshi phone number",
+                  },
+                })}
+                placeholder="Enter your phone number (optional)"
+                className="w-full bg-transparent outline-none text-white"
+                onFocus={() => setFocusedField("phone")}
+                onBlur={() => setFocusedField(null)}
+                disabled={isLoading}
+              />
+            </div>
+            {errors.phone && (
+              <p className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm mt-1">
+                {errors.phone.message}
+              </p>
+            )}
           </div>
 
           {/* Email */}
           <div className="mb-4">
             <label className="block text-gray-500 mb-1">Your Email*</label>
-            <input
-              type="email"
-              {...register("email", { required: "Email is required" })}
-              placeholder="Enter your email"
-              className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"
-            />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+            <div
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
+                focusedField === "email"
+                  ? "border-l-4 border-orange-500 bg-gray-700"
+                  : "border-gray-700 bg-gray-800"
+              }`}
+            >
+              <input
+                type="email"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Invalid email address"
+                  }
+                })}
+                placeholder="Enter your email"
+                className="w-full bg-transparent outline-none text-white"
+                onFocus={() => setFocusedField("email")}
+                onBlur={() => setFocusedField(null)}
+                disabled={isLoading}
+              />
+            </div>
+            {errors.email && (
+              <p className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           {/* Password */}
           <div className="mb-4">
             <label className="block text-gray-500 mb-1">Password*</label>
-            <input
-              type="password"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-                pattern: {
-                  value: /(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z])/,
-                  message:
-                    "Must include uppercase, lowercase, number & special character",
-                },
-              })}
-              placeholder="Create a strong password"
-              className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"
-            />
+            <div
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
+                focusedField === "password"
+                  ? "border-l-4 border-orange-500 bg-gray-700"
+                  : "border-gray-700 bg-gray-800"
+              }`}
+            >
+              <input
+                type={showPassword ? "text" : "password"}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                  pattern: {
+                    value: /(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z])/,
+                    message:
+                      "Must include uppercase, lowercase, number & special character",
+                  },
+                })}
+                placeholder="Create a strong password"
+                className="w-full bg-transparent outline-none text-white"
+                onFocus={() => setFocusedField("password")}
+                onBlur={() => setFocusedField(null)}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="ml-2 text-gray-400 hover:text-gray-300 focus:outline-none transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
             {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
+              <p className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           {/* Confirm Password */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label className="block text-gray-500 mb-1">Confirm Password*</label>
-            <input
-              type="password"
-              {...register("confirmPassword", {
-                required: "Please confirm your password",
-                validate: (value) =>
-                  value === watch("password") || "Passwords do not match",
-              })}
-              placeholder="Confirm your password"
-              className="w-full p-3 rounded bg-gray-800 text-white border border-gray-700"
-            />
+            <div
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
+                focusedField === "confirmPassword"
+                  ? "border-l-4 border-orange-500 bg-gray-700"
+                  : "border-gray-700 bg-gray-800"
+              }`}
+            >
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) =>
+                    value === watch("password") || "Passwords do not match",
+                })}
+                placeholder="Confirm your password"
+                className="w-full bg-transparent outline-none text-white"
+                onFocus={() => setFocusedField("confirmPassword")}
+                onBlur={() => setFocusedField(null)}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="ml-2 text-gray-400 hover:text-gray-300 focus:outline-none transition-colors"
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                disabled={isLoading}
+              >
+                {showConfirmPassword ? (
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
+              <p className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm mt-1">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-primary py-3 text-white font-bold rounded hover:bg-[#b90101ce] transition"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-orange-400 to-red-600 py-3 text-white font-bold rounded cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Register
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Registering...
+              </>
+            ) : (
+              "Register"
+            )}
           </button>
         </form>
 
-        <p className="text-gray-400 mt-5 z-50 text-center">
+        <p className="text-gray-400 mt-6 z-50 text-center">
           Already have an account?{" "}
-          <Link href="/signin" className="text-primary hover:underline">
+          <Link 
+            href="/signin" 
+            className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent hover:underline"
+          >
             Login
           </Link>
         </p>

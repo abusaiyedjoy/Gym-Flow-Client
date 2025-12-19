@@ -1,319 +1,305 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Star, Award, ArrowRight, Users, UserCheck } from "lucide-react";
-import Link from 'next/link';
-import Image from 'next/image';
+import { ChevronLeft, ChevronRight, Star, Award, ArrowRight, Users } from "lucide-react";
+
+// Add keyframes for slide animation
+const styles = `
+
+  
+  @keyframes slideOut {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-100px);
+    }
+  }
+  
+  .animate-slideIn {
+    animation: slideIn 0.6s ease-out forwards;
+  }
+`;
 
 const exampleTrainers = [
   {
-    name: "Sarah Kim",
-    specialty: "Yoga & Pilates",
-    rating: 4.9,
-    reviews: 92,
-    experienceYears: 5,
-    clients: 200,
-    imageUrl: "/Images/profile2.jpg",
-    tags: ["Flexibility", "Mindfulness", "Stress Relief"],
-  },
-  {
-    name: "David Lee",
-    specialty: "CrossFit & HIIT",
-    rating: 4.7,
-    reviews: 78,
-    experienceYears: 6,
-    clients: 120,
-    imageUrl: "/Images/profile3.jpg",
-    tags: ["Cardio", "Strength", "Endurance"],
-  },
-  {
-    name: "Emma Watson",
-    specialty: "Personal Training",
-    rating: 4.9,
-    reviews: 110,
-    experienceYears: 8,
-    clients: 180,
-    imageUrl: "/Images/profile1.jpg",
-    tags: ["Custom Plans", "Nutrition", "Motivation"],
-  },
-  {
-    name: "James Anderson",
-    specialty: "Sports Performance",
+    id: "1",
+    name: "Abu Saiyed",
+    membershipId: "TRN20250001",
+    experienceYears: 2,
+    specializations: ["Yoga"],
     rating: 4.8,
-    reviews: 95,
-    experienceYears: 9,
-    clients: 140,
-    imageUrl: "/Images/profile2.jpg",
-    tags: ["Athletic Training", "Speed", "Agility"],
-  }
+    totalClients: 15,
+    profileImage: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=400&h=400&fit=crop",
+  },
+  {
+    id: "2",
+    name: "Sarah Johnson",
+    membershipId: "TRN20250002",
+    experienceYears: 5,
+    specializations: ["Cardio", "Weight Training"],
+    rating: 4.9,
+    totalClients: 32,
+    profileImage: "https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400&h=400&fit=crop",
+  },
+  {
+    id: "3",
+    name: "Michael Chen",
+    membershipId: "TRN20250003",
+    experienceYears: 4,
+    specializations: ["CrossFit", "HIIT"],
+    rating: 4.7,
+    totalClients: 28,
+    profileImage: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop",
+  },
+  {
+    id: "4",
+    name: "Emma Williams",
+    membershipId: "TRN20250004",
+    experienceYears: 3,
+    specializations: ["Pilates", "Flexibility"],
+    rating: 4.8,
+    totalClients: 22,
+    profileImage: "https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=400&h=400&fit=crop",
+  },
+  {
+    id: "5",
+    name: "James Rodriguez",
+    membershipId: "TRN20250005",
+    experienceYears: 6,
+    specializations: ["Boxing", "Kickboxing"],
+    rating: 4.9,
+    totalClients: 35,
+    profileImage: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=400&fit=crop",
+  },
+  {
+    id: "6",
+    name: "Lisa Anderson",
+    membershipId: "TRN20250006",
+    experienceYears: 4,
+    specializations: ["Zumba", "Dance Fitness"],
+    rating: 4.8,
+    totalClients: 30,
+    profileImage: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=400&fit=crop",
+  },
 ];
 
 export default function ExpertTrainers() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(1);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % exampleTrainers.length);
+      nextSlide();
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, currentIndex, visibleCount]);
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % exampleTrainers.length);
-    setIsAutoPlaying(false);
+    if (isAnimating) return;
+    
+    // Check if we can go forward
+    if (currentIndex + visibleCount >= exampleTrainers.length) return;
+    
+    setIsAnimating(true);
+    setCurrentIndex((prev) => prev + 1);
+    
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 600);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + exampleTrainers.length) % exampleTrainers.length);
+    if (isAnimating) return;
+    
+    // Check if we can go backward
+    if (currentIndex <= 0) return;
+    
+    setIsAnimating(true);
+    setCurrentIndex((prev) => prev - 1);
     setIsAutoPlaying(false);
+    
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 600);
   };
+
+  // Responsive: 1 (default), 2 (sm), 3 (md), 4 (lg+)
+  const getVisibleCount = () => {
+    if (typeof window === 'undefined') return 1;
+    if (window.innerWidth >= 1280) return 4; // lg+
+    if (window.innerWidth >= 1024) return 3; // md
+    if (window.innerWidth >= 640) return 2; // sm
+    return 1;
+  };
+
+  useEffect(() => {
+    const updateCount = () => {
+      const newCount = getVisibleCount();
+      setVisibleCount(newCount);
+      
+      // Adjust currentIndex if needed when screen size changes
+      if (currentIndex + newCount > exampleTrainers.length) {
+        setCurrentIndex(Math.max(0, exampleTrainers.length - newCount));
+      }
+    };
+    updateCount();
+    window.addEventListener('resize', updateCount);
+    return () => window.removeEventListener('resize', updateCount);
+  }, [currentIndex]);
 
   const getVisibleTrainers = () => {
-    const visible = [];
-    for (let i = 0; i < 3; i++) {
-      visible.push(exampleTrainers[(currentIndex + i) % exampleTrainers.length]);
-    }
-    return visible;
+    return exampleTrainers.slice(currentIndex, currentIndex + visibleCount);
   };
 
-  const TrainerCard = ({ trainer }: { trainer: any }) => {
-  return (
-    <div className="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-2xl transition-all duration-300 hover:border-orange-500/40">
+  // Check if navigation buttons should be disabled
+  const canGoBack = currentIndex > 0;
+  const canGoForward = currentIndex + visibleCount < exampleTrainers.length;
 
-      {/* Profile Image */}
-      <div className="relative w-full h-64 overflow-hidden bg-zinc-200 dark:bg-zinc-800">
-        <Image
-          src={trainer?.imageUrl || "/Images/profile2.jpg"}
-          alt={trainer?.name}
-          fill
-          className="object-cover object-center group-hover:scale-105 transition-all duration-500"
-        />
+  const TrainerCard = ({ trainer }: { trainer: typeof exampleTrainers[0] }) => {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mx-auto w-full max-w-sm transition-all duration-300 hover:shadow-lg hover:border-orange-300">
+        <div className="flex flex-col items-center">
+          {/* Profile Image */}
+          <div className="relative w-28 h-28 rounded-full overflow-hidden mb-4 border-4 border-orange-500/20">
+            <img
+              src={trainer.profileImage}
+              alt={trainer.name}
+              className="object-cover w-full h-full"
+            />
+          </div>
 
-        {trainer?.isAvailable && (
-          <span className="absolute top-3 left-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow-md">
-            Available
-          </span>
-        )}
+          {/* Trainer Info */}
+          <h3 className="text-xl font-bold text-gray-900 mb-1 text-center">
+            {trainer.name}
+          </h3>
+          <p className="text-sm text-gray-500 mb-3 text-center">
+            {trainer.membershipId}
+          </p>
 
-        {!trainer.isAvailable && (
-          <span className="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full shadow-md">
-            Busy
-          </span>
-        )}
-      </div>
-
-      {/* Card Content */}
-      <div className="p-5 space-y-3">
-
-        {/* Name */}
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white group-hover:text-orange-600 transition-colors">
-          {trainer?.name}
-        </h3>
-
-        {/* Specialty (dynamic) */}
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 min-h-10 line-clamp-2">
-          {trainer.specializations?.map((s: { name: any; }) => s.name).join(" • ")}
-          {" • "}
-          {trainer.experienceYears} Years Experience
-        </p>
-
-        {/* Rating */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(trainer.rating)
-                    ? "fill-orange-500 text-orange-500"
-                    : i < trainer.rating
-                    ? "fill-orange-500/50 text-orange-500"
-                    : "fill-zinc-300 text-zinc-300 dark:fill-zinc-700 dark:text-zinc-700"
-                }`}
-              />
+          {/* Specializations */}
+          <div className="flex flex-wrap gap-2 justify-center mb-4">
+            {trainer?.specializations.map((spec: any, idx: number) => (
+              <span
+                key={idx}
+                className="px-3 py-1 bg-orange-50 text-orange-600 text-xs font-medium rounded-full"
+              >
+                {spec}
+              </span>
             ))}
           </div>
-          <span className="text-sm font-semibold text-zinc-900 dark:text-white">
-            {trainer.rating.toFixed(1)}
-          </span>
-          <span className="text-sm text-zinc-500 dark:text-zinc-400">
-            ({trainer.reviewCount})
-          </span>
-        </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-3 text-xs text-zinc-600 dark:text-zinc-400 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-1">
-            <Award className="w-4 h-4 text-orange-500" />
-            <span>{trainer.experienceYears} Years</span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Users className="w-4 h-4 text-orange-500" />
-            <span>{trainer.totalClients}+ Clients</span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <UserCheck className="w-4 h-4 text-orange-500" />
-            <span>{trainer.successRate}% Success</span>
+          {/* Stats */}
+          <div className="flex items-center justify-between w-full pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-1">
+              <Star className="w-4 h-4 fill-orange-500 text-orange-500" />
+              <span className="text-sm font-semibold text-gray-900">
+                {trainer.rating}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-gray-600">
+              <Users className="w-4 h-4" />
+              <span className="text-sm">{trainer.totalClients} clients</span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {trainer.experienceYears}y exp
+            </div>
           </div>
         </div>
-
-        {/* Tags (Certifications) */}
-        {/* <div className="flex flex-wrap gap-1.5">
-          {trainer.certifications.slice(0, 2).map((cert, idx) => (
-            <span
-              key={idx}
-              className="text-xs px-2 py-1 rounded-md bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800"
-            >
-              {cert}
-            </span>
-          ))}
-
-          {trainer.certifications.length > 2 && (
-            <span className="text-xs px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700">
-              +{trainer.certifications.length - 2}
-            </span>
-          )}
-        </div> */}
-
-        {/* CTA Button */}
-        <button className="
-          w-full mt-2 py-2.5 text-sm font-semibold text-white 
-          rounded-lg shadow-md 
-          bg-gradient-to-r from-orange-500 to-red-600 
-          hover:from-orange-600 hover:to-red-700 
-          transition-all duration-300 
-          flex items-center justify-center gap-2
-        ">
-          View Profile
-          <ArrowRight className="w-4 h-4" />
-        </button>
       </div>
-    </div>
-  );
-};
-
+    );
+  };
 
   return (
-    <section className="relative py-20 lg:py-28 bg-linear-to-br from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 overflow-hidden">
+    <section className="relative py-20 lg:py-28 bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+      {/* Inject styles */}
+      <style>{styles}</style>
+
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-size-[40px_40px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px]" />
 
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-full text-orange-600 dark:text-orange-400 text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-full text-orange-600 text-sm font-medium mb-6">
             <Award className="w-4 h-4" />
             <span>Meet Our Team</span>
           </div>
 
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Train With{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-red-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
               The Best
             </span>
           </h2>
 
-          <p className="text-xl text-zinc-600 dark:text-zinc-400">
+          <p className="text-xl text-gray-600">
             50+ Certified & Experienced Trainers ready to guide your fitness journey
           </p>
         </div>
 
-        {/* Desktop Slider View */}
-        <div className="hidden lg:block mb-12">
-          <div className="grid grid-cols-3 gap-6 max-w-7xl mx-auto">
+        {/* Responsive Slider View with Animation */}
+        <div className="mb-12 overflow-hidden">
+          <div
+            className={`grid gap-6 transition-all duration-600 ease-in-out grid-cols-1 ${
+              visibleCount === 2 ? 'sm:grid-cols-2' : ''
+            } ${visibleCount === 3 ? 'md:grid-cols-3' : ''} ${visibleCount === 4 ? 'lg:grid-cols-4' : ''}`}
+          >
             {getVisibleTrainers().map((trainer, idx) => (
-              <TrainerCard key={`${trainer.name}-${idx}`} trainer={trainer} />
+              <div
+                key={`${trainer.id}-${currentIndex}-${idx}`}
+                className="animate-slideIn"
+                style={{
+                  animationDelay: `${idx * 100}ms`,
+                }}
+              >
+                <TrainerCard trainer={trainer} />
+              </div>
             ))}
           </div>
 
           {/* Navigation Controls */}
-          <div className="flex items-center justify-center gap-4 mt-8">
+          <div className="flex items-center justify-end gap-4 mt-4 mb-2">
             <button
               onClick={prevSlide}
-              className="w-12 h-12 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center text-zinc-900 dark:text-white shadow-lg hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:border-orange-500 transition-all"
+              disabled={!canGoBack}
+              className={`w-12 h-12 border rounded-full flex items-center justify-center shadow-lg transition-all ${
+                canGoBack
+                  ? 'bg-white border-gray-200 text-gray-900 hover:bg-orange-500 hover:border-orange-500 hover:text-white cursor-pointer'
+                  : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+              }`}
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
 
-            <div className="flex gap-2">
-              {exampleTrainers.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setCurrentIndex(index);
-                    setIsAutoPlaying(false);
-                  }}
-                  className={`h-2 rounded-full transition-all ${
-                    index === currentIndex
-                      ? 'w-8 bg-linear-to-r from-orange-500 to-red-600'
-                      : 'w-2 bg-zinc-300 dark:bg-zinc-700 hover:bg-zinc-400 dark:hover:bg-zinc-600'
-                  }`}
-                />
-              ))}
-            </div>
-
             <button
               onClick={nextSlide}
-              className="w-12 h-12 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center text-zinc-900 dark:text-white shadow-lg hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:border-orange-500 transition-all"
+              disabled={!canGoForward}
+              className={`w-12 h-12 border rounded-full flex items-center justify-center shadow-lg transition-all ${
+                canGoForward
+                  ? 'bg-white border-gray-200 text-gray-900 hover:bg-orange-500 hover:border-orange-500 hover:text-white cursor-pointer'
+                  : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+              }`}
             >
               <ChevronRight className="w-6 h-6" />
             </button>
           </div>
         </div>
 
-        {/* Mobile Carousel */}
-        <div className="lg:hidden mb-12">
-          <div className="overflow-hidden">
-            <div
-              className="flex transition-transform duration-500 ease-out"
-              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-            >
-              {exampleTrainers.map((trainer, idx) => (
-                <div
-                  key={idx}
-                  className="w-full shrink-0 px-4"
-                >
-                  <TrainerCard trainer={trainer} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-center gap-2 mt-6">
-            {exampleTrainers.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setCurrentIndex(index);
-                  setIsAutoPlaying(false);
-                }}
-                className={`h-2 rounded-full transition-all ${
-                  index === currentIndex
-                    ? 'w-8 bg-linear-to-r from-orange-500 to-red-600'
-                    : 'w-2 bg-zinc-300 dark:bg-zinc-700'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
         {/* CTA Button */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/trainers">
-          <Button
-            size="lg"
-            className="bg-linear-to-r cursor-pointer from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-6 text-lg shadow-xl shadow-orange-500/20 border-0 group"
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-0">
+          <button
+            className="cursor-pointer bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 text-lg rounded-lg shadow-xl shadow-orange-500/20 border-0 group transition-all flex items-center gap-2"
           >
             View All Trainers
-            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
-          </Link>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
         </div>
       </div>
     </section>

@@ -127,7 +127,7 @@ export default function PricingSection() {
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Choose Your{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 Perfect Plan
               </span>
             </h1>
@@ -141,7 +141,7 @@ export default function PricingSection() {
               <button
                 onClick={() => setBillingCycle("monthly")}
                 className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${billingCycle === "monthly"
-                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
+                  ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
                   : "text-zinc-400 hover:text-white"
                   }`}
               >
@@ -150,7 +150,7 @@ export default function PricingSection() {
               <button
                 onClick={() => setBillingCycle("yearly")}
                 className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${billingCycle === "yearly"
-                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
+                  ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
                   : "text-zinc-400 hover:text-white"
                   }`}
               >
@@ -185,7 +185,7 @@ export default function PricingSection() {
             <p className="text-muted-foreground">No membership plans available</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 container mx-auto">
             {plans.map((plan, index) => {
               const Icon = getPlanIcon(plan.name);
               const isSelected = selectedPlan === plan.id;

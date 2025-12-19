@@ -11,7 +11,7 @@ const steps = [
     description: "Share your age, fitness goals, experience level, and any health conditions. This helps us understand your unique needs.",
     icon: ScrollIcon,
     details: ["Age & Fitness Level", "Health Conditions", "Lifestyle & Schedule"],
-    color: "from-orange-500 to-red-600"
+    color: "from-primary to-secondary"
   },
   {
     number: "02",
@@ -90,14 +90,14 @@ export default function AITrainerSection() {
         </div>
 
         {/* Steps Container */}
-        <div className="max-w-7xl mx-auto">
+        <div className="container mx-auto">
           {/* Desktop View - Horizontal */}
           <div className="hidden lg:block">
             <div className="relative">
               {/* Connection Lines */}
               <div className="absolute top-24 left-0 right-0 h-1 bg-linear-to-r from-zinc-800 via-zinc-700 to-zinc-800">
                 <div
-                  className="h-full bg-linear-to-r from-orange-500 to-red-600 transition-all duration-1000"
+                  className="h-full bg-linear-to-r from-primary to-secondary transition-all duration-1000"
                   style={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
                 />
               </div>
@@ -150,7 +150,7 @@ export default function AITrainerSection() {
                               key={idx}
                               className="flex items-center gap-2 text-sm text-zinc-500"
                             >
-                              <div className="w-1.5 h-1.5 bg-linear-to-r from-orange-500 to-red-600 rounded-full" />
+                              <div className="w-1.5 h-1.5 bg-linear-to-r from-primary to-secondary rounded-full" />
                               <span>{detail}</span>
                             </div>
                           ))}
@@ -158,7 +158,7 @@ export default function AITrainerSection() {
 
                         {/* Active Indicator */}
                         {activeStep === index && (
-                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-20 h-1 bg-linear-to-r from-orange-500 to-red-600 rounded-full" />
+                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-20 h-1 bg-linear-to-r from-primary to-secondary rounded-full" />
                         )}
                       </div>
                     </div>
@@ -218,7 +218,7 @@ export default function AITrainerSection() {
         <div className={`text-center mt-16 transition-all duration-1000 delay-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <Button
             size="lg"
-            className="group bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-7 text-lg shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 border-0"
+            className="group bg-linear-to-r from-primary to-secondary hover:from-orange-600 hover:to-red-700 text-white px-10 py-7 text-lg shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 border-0"
           >
             <Sparkles className="mr-2 w-5 h-5" />
             Try AI Trainer Finder

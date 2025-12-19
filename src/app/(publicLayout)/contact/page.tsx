@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 
+export const dynamic = "force-static";
+
 const contactInfo = [
   {
     icon: MapPin,
@@ -53,15 +55,15 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Info Cards */}
-      <section className="py-12 bg-zinc-50 dark:bg-zinc-950">
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 -mt-20 relative z-10">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
             {contactInfo.map((info, index) => {
               const Icon = info.icon;
               return (
-                <Card key={index} className="border-zinc-200 dark:border-zinc-800 hover:shadow-xl transition-shadow group">
+                <Card key={index} className=" border-zinc-200 dark:border-zinc-800 hover:shadow-xl transition-shadow group ">
                   <CardHeader>
-                    <div className="w-14 h-14 bg-linear-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <div className="w-14 h-14 bg-linear-to-r from-primary to-secondary rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                       <Icon className="w-7 h-7 text-white" />
                     </div>
                     <CardTitle className="text-xl">{info.title}</CardTitle>
@@ -92,7 +94,7 @@ export default function ContactPage() {
       {/* Main Content - Form & Map */}
       <section className="py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 container mx-auto">
             {/* Contact Form */}
             <ContactForm />
 
@@ -123,7 +125,7 @@ export default function ContactPage() {
                   />
                 </div>
                 <div className="p-6 h-full">
-                  <Button className="w-full bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white">
+                  <Button className="w-full bg-linear-to-r from-primary to-secondary hover:from-orange-600 hover:to-red-700 text-white">
                     <MapPin className="w-4 h-4 mr-2" />
                     Open in Google Maps
                   </Button>

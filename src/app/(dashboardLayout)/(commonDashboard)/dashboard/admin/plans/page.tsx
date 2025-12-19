@@ -131,7 +131,7 @@ export default function AdminPlansPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="container mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -139,7 +139,7 @@ export default function AdminPlansPage() {
             <p className="text-gray-600 mt-2">Manage and monitor your membership offerings</p>
           </div>
           <Link href="/dashboard/admin/plans/create">
-            <button className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105">
+            <button className="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105">
               <Plus className="w-5 h-5" />
               Create New Plan
             </button>
@@ -183,7 +183,7 @@ export default function AdminPlansPage() {
                   <span className="text-sm text-green-600 font-medium">+15%</span>
                 </div>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center">
+              <div className="w-14 h-14 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center">
                 <DollarSign className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -218,7 +218,7 @@ export default function AdminPlansPage() {
                 {/* Popular Badge */}
                 {plan.isPopular && (
                   <div className="absolute top-6 right-6 z-10">
-                    <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg">
+                    <div className="bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg">
                       MOST POPULAR
                     </div>
                   </div>
@@ -316,7 +316,7 @@ export default function AdminPlansPage() {
                   </Link>
                   <Link href={`/dashboard/admin/plans/${plan.id}/edit`} className="flex-1">
                     <button
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl font-medium text-white hover:shadow-lg transition-all"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-primary to-secondary rounded-xl font-medium text-white hover:shadow-lg transition-all"
                       disabled={actionLoading === plan.id}
                     >
                       <Edit className="w-4 h-4" />
@@ -331,8 +331,8 @@ export default function AdminPlansPage() {
                     onClick={() => handleToggleStatus(plan.id, plan.isActive)}
                     disabled={actionLoading === plan.id}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all ${plan.isActive
-                        ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                        : "bg-green-100 text-green-700 hover:bg-green-200"
+                      ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                      : "bg-green-100 text-green-700 hover:bg-green-200"
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {actionLoading === plan.id ? (
@@ -371,7 +371,7 @@ export default function AdminPlansPage() {
               Expand your offerings by creating additional membership plans to cater to different fitness goals and budgets.
             </p>
             <Link href="/dashboard/admin/plans/create">
-              <button className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg transition-all">
+              <button className="bg-gradient-to-r from-primary to-secondary text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg transition-all">
                 Create New Plan
               </button>
             </Link>

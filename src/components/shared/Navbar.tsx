@@ -158,7 +158,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
 
                             ) : (
                                 <Link href="/signin">
-                                    <Button className="bg-linear-to-r from-orange-400 to-red-600 cursor-pointer hover:bg-red-700 text-white px-6">
+                                    <Button className="bg-linear-to-r from-primary to-secondary cursor-pointer hover:bg-destructive text-white px-6">
                                         Sign In
                                     </Button>
                                 </Link>
@@ -263,7 +263,7 @@ export default function Navbar({ isAuthenticated = true, user = null }: NavbarPr
                             </>
                         ) : (
                             <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
-                                <Button className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-lg shadow-red-500/20">
+                                <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary hover:to-secondary text-white shadow-lg shadow-red-500/20">
                                     Sign In
                                 </Button>
                             </Link>

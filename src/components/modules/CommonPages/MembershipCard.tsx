@@ -28,7 +28,7 @@ const plans = [
         yearlyPrice: 35000,
         description: "Most popular choice",
         badge: "Best Value",
-        gradient: "from-orange-500 to-red-600",
+        gradient: "from-primary to-secondary",
         features: [
             "Everything in Basic",
             "4 Personal Training Sessions",
@@ -102,7 +102,7 @@ const MembershipCards = () => {
                         <button
                             onClick={() => setBillingCycle('monthly')}
                             className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${billingCycle === 'monthly'
-                                ? 'bg-linear-to-r from-orange-500 to-red-600 text-white shadow-lg'
+                                ? 'bg-linear-to-r from-primary to-secondary text-white shadow-lg'
                                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                 }`}
                         >
@@ -111,7 +111,7 @@ const MembershipCards = () => {
                         <button
                             onClick={() => setBillingCycle('annual')}
                             className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${billingCycle === 'annual'
-                                ? 'bg-linear-to-r from-orange-500 to-red-600 text-white shadow-lg'
+                                ? 'bg-linear-to-r from-primary to-secondary text-white shadow-lg'
                                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                 }`}
                         >
@@ -146,7 +146,7 @@ const MembershipCards = () => {
             </div>
 
             {/* Pricing Cards */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 container mx-auto mb-12">
                 {plans.map((plan) => {
                     if (plan.yearlyOnly && billingCycle === 'monthly') return null;
 
@@ -164,7 +164,7 @@ const MembershipCards = () => {
                             {/* Badge */}
                             {plan.badge && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                                    <div className="bg-linear-to-r from-orange-500 to-red-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                                    <div className="bg-linear-to-r from-primary to-secondary text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1">
                                         {plan.highlighted ? <Zap className="w-3 h-3" /> : <Crown className="w-3 h-3" />}
                                         {plan.badge}
                                     </div>
@@ -219,7 +219,7 @@ const MembershipCards = () => {
                                 <Button
                                     className={`w-full ${plan.highlighted
                                         ? 'bg-white text-orange-600 hover:bg-zinc-100 border-0 shadow-lg'
-                                        : 'bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0'
+                                        : 'bg-linear-to-r from-primary to-secondary hover:from-orange-600 hover:to-red-700 text-white border-0'
                                         }`}
                                 >
                                     Get {plan.name}
@@ -231,7 +231,7 @@ const MembershipCards = () => {
                                 <div className="space-y-3">
                                     {plan.features.map((feature, index) => (
                                         <div key={index} className="flex items-start gap-3">
-                                            <div className="shrink-0 w-5 h-5 rounded-full bg-linear-to-r from-orange-500 to-red-600 flex items-center justify-center mt-0.5">
+                                            <div className="shrink-0 w-5 h-5 rounded-full bg-linear-to-r from-primary to-secondary flex items-center justify-center mt-0.5">
                                                 <Check className="w-3 h-3 text-white" strokeWidth={3} />
                                             </div>
                                             <span className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">

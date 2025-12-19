@@ -27,14 +27,14 @@ export default function NotFound() {
                 {/* 404 */}
                 <div className="relative">
                     <div className="text-[180px] sm:text-[220px] lg:text-[280px] font-black leading-none">
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 animate-pulse">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary animate-pulse">
                             404
                         </span>
                     </div>
 
                     {/* Dumbbell */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <div className="p-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-full animate-bounce shadow-2xl shadow-orange-500/50">
+                        <div className="p-4 bg-gradient-to-r from-primary to-secondary rounded-full animate-bounce shadow-2xl shadow-orange-500/50">
                             <Dumbbell className="w-12 h-12 text-white" />
                         </div>
                     </div>
@@ -54,7 +54,7 @@ export default function NotFound() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                     <Button
                         size="lg"
-                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-6 text-lg group"
+                        className="bg-gradient-to-r from-primary to-secondary hover:from-orange-600 hover:to-red-700 text-white px-8 py-6 text-lg group"
                         onClick={() => (window.location.href = "/")}
                     >
                         <Home className="mr-2 w-5 h-5" />

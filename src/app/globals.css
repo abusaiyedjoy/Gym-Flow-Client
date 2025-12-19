@@ -3,16 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ===========================================
-   GLOBAL STYLES & SMOOTH SCROLLING
-   =========================================== */
 html {
   scroll-behavior: smooth;
 }
 
-/* ===========================================
-   THEME CONFIGURATION - RED PRIMARY COLOR
-   =========================================== */
 @theme inline {
   /* Core Theme Colors */
   --color-background: var(--background);
@@ -74,9 +68,6 @@ html {
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* ===========================================
-   LIGHT MODE THEME - RED PRIMARY
-   =========================================== */
 :root {
   /* Border Radius */
   --radius: 0.625rem;
@@ -98,7 +89,7 @@ html {
   --primary-foreground: oklch(0.985 0 0); /* White */
   
   /* Secondary Colors */
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.70 0.22 75);
   --secondary-foreground: oklch(0.145 0 0);
   
   /* Muted Colors */
@@ -135,9 +126,7 @@ html {
   --sidebar-ring: oklch(0.577 0.245 27.325); /* Red */
 }
 
-/* ===========================================
-   DARK MODE THEME - RED PRIMARY
-   =========================================== */
+
 .dark {
   /* Base Colors */
   --background: oklch(0.145 0 0);
@@ -152,8 +141,8 @@ html {
   --popover-foreground: oklch(0.985 0 0);
   
   /* Primary Colors (Red) */
-  --primary: oklch(0.704 0.191 22.216); /* Lighter Red for dark mode */
-  --primary-foreground: oklch(0.985 0 0); /* White */
+  --primary: oklch(0.704 0.191 22.216);
+  --primary-foreground: oklch(0.985 0 0);
   
   /* Secondary Colors */
   --secondary: oklch(0.269 0 0);
@@ -164,16 +153,16 @@ html {
   --muted-foreground: oklch(0.708 0 0);
   
   /* Accent Colors (Red Tints) */
-  --accent: oklch(0.269 0.05 27.325); /* Dark red tint */
-  --accent-foreground: oklch(0.704 0.191 22.216); /* Light Red */
+  --accent: oklch(0.269 0.05 27.325); 
+  --accent-foreground: oklch(0.704 0.191 22.216);
   
   /* Destructive Colors */
-  --destructive: oklch(0.704 0.191 22.216); /* Light Red */
+  --destructive: oklch(0.704 0.191 22.216);
   
   /* UI Elements */
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.704 0.191 22.216); /* Light Red ring */
+  --ring: oklch(0.704 0.191 22.216); 
   
   /* Chart Colors (Red Theme) */
   --chart-1: oklch(0.704 0.191 22.216); /* Light Red */
@@ -193,9 +182,7 @@ html {
   --sidebar-ring: oklch(0.704 0.191 22.216); /* Light Red */
 }
 
-/* ===========================================
-   BASE LAYER STYLES
-   =========================================== */
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

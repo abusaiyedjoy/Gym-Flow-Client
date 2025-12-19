@@ -52,7 +52,7 @@ const ContactForm = () => {
                 <div className="mb-8">
                     <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
                         Send Us a{" "}
-                        <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-red-600">
+                        <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">
                             Message
                         </span>
                     </h2>
@@ -158,7 +158,7 @@ const ContactForm = () => {
                                 {/* Submit Button */}
                                 <Button
                                     onClick={handleSubmit}
-                                    className="w-full bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-6 text-lg group"
+                                    className="w-full bg-linear-to-r from-primary to-secondary hover:from-orange-600 hover:to-red-700 text-white py-6 text-lg group"
                                 >
                                     <Send className="w-5 h-5 mr-2" />
                                     Send Message

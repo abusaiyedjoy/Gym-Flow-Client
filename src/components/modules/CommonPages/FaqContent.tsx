@@ -235,7 +235,7 @@ export default function FAQContent() {
       </section>
 
       {/* FAQ Categories Stats */}
-      <section className="py-12 bg-zinc-50 dark:bg-zinc-950">
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 -mt-20 relative z-10">
             {faqCategories.map((category) => {
@@ -244,8 +244,8 @@ export default function FAQContent() {
                 <Card
                   key={category.id}
                   className={`cursor-pointer transition-all duration-300 ${selectedCategory === category.id && !searchQuery
-                      ? 'border-orange-500 shadow-xl shadow-orange-500/20'
-                      : 'border-zinc-200 dark:border-zinc-800 hover:shadow-lg'
+                    ? 'border-orange-500 shadow-xl shadow-orange-500/20'
+                    : 'border-zinc-200 dark:border-zinc-800 hover:shadow-lg'
                     }`}
                   onClick={() => {
                     setSelectedCategory(category.id);
@@ -254,12 +254,12 @@ export default function FAQContent() {
                 >
                   <CardHeader className="pb-3 pt-6">
                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 mx-auto ${selectedCategory === category.id && !searchQuery
-                        ? 'bg-linear-to-r from-orange-500 to-red-600'
-                        : 'bg-zinc-100 dark:bg-zinc-800'
+                      ? 'bg-linear-to-r from-primary to-secondary'
+                      : 'bg-zinc-100 dark:bg-zinc-800'
                       }`}>
                       <Icon className={`w-6 h-6 ${selectedCategory === category.id && !searchQuery
-                          ? 'text-white'
-                          : 'text-zinc-600 dark:text-zinc-400'
+                        ? 'text-white'
+                        : 'text-zinc-600 dark:text-zinc-400'
                         }`} />
                     </div>
                     <CardTitle className="text-center text-sm">{category.title}</CardTitle>
@@ -319,7 +319,7 @@ export default function FAQContent() {
                   >
                     <AccordionTrigger className="text-left hover:no-underline py-5">
                       <div className="flex items-start gap-3 pr-4">
-                        <div className="shrink-0 w-6 h-6 rounded-full bg-linear-to-r from-orange-500 to-red-600 flex items-center justify-center mt-1">
+                        <div className="shrink-0 w-6 h-6 rounded-full bg-linear-to-r from-primary to-secondary flex items-center justify-center mt-1">
                           <span className="text-white text-xs font-bold">Q</span>
                         </div>
                         <div>
@@ -362,7 +362,7 @@ export default function FAQContent() {
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
                 Still Have{" "}
-                <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-red-600">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">
                   Questions?
                 </span>
               </h2>
@@ -375,7 +375,7 @@ export default function FAQContent() {
               {/* Contact Card */}
               <Card className="border-zinc-200 dark:border-zinc-800 hover:shadow-xl transition-shadow">
                 <CardHeader>
-                  <div className="w-14 h-14 bg-linear-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-4">
+                  <div className="w-14 h-14 bg-linear-to-r from-primary to-secondary rounded-xl flex items-center justify-center mb-4">
                     <MessageSquare className="w-7 h-7 text-white" />
                   </div>
                   <CardTitle>Live Chat</CardTitle>
@@ -384,7 +384,7 @@ export default function FAQContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white">
+                  <Button className="w-full bg-linear-to-r from-primary to-secondary hover:from-orange-600 hover:to-red-700 text-white">
                     Start Chat
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -394,7 +394,7 @@ export default function FAQContent() {
               {/* Phone Card */}
               <Card className="border-zinc-200 dark:border-zinc-800 hover:shadow-xl transition-shadow">
                 <CardHeader>
-                  <div className="w-14 h-14 bg-linear-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-4">
+                  <div className="w-14 h-14 bg-linear-to-r from-primary to-secondary rounded-xl flex items-center justify-center mb-4">
                     <Phone className="w-7 h-7 text-white" />
                   </div>
                   <CardTitle>Call Us</CardTitle>
@@ -413,7 +413,7 @@ export default function FAQContent() {
               {/* Email Card */}
               <Card className="border-zinc-200 dark:border-zinc-800 hover:shadow-xl transition-shadow">
                 <CardHeader>
-                  <div className="w-14 h-14 bg-linear-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-4">
+                  <div className="w-14 h-14 bg-linear-to-r from-primary to-secondary rounded-xl flex items-center justify-center mb-4">
                     <Mail className="w-7 h-7 text-white" />
                   </div>
                   <CardTitle>Email Us</CardTitle>

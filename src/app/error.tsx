@@ -26,8 +26,8 @@ export default function Error({
         {/* Error Icon */}
         <div className="flex justify-center">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-600 rounded-full blur-2xl opacity-50 animate-pulse" />
-            <div className="relative p-6 bg-gradient-to-r from-orange-500 to-red-600 rounded-full">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-full blur-2xl opacity-50 animate-pulse" />
+            <div className="relative p-6 bg-gradient-to-r from-primary to-secondary rounded-full">
               <AlertTriangle className="w-16 h-16 text-white animate-bounce" />
             </div>
           </div>
@@ -37,7 +37,7 @@ export default function Error({
         <div className="space-y-4">
           <h1 className="text-5xl sm:text-6xl font-bold text-white">
             Oops!{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
               Something Went Wrong
             </span>
           </h1>
@@ -52,7 +52,7 @@ export default function Error({
           <Button
             onClick={reset}
             size="lg"
-            className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-6 text-lg group cursor-pointer"
+            className="bg-gradient-to-r from-primary to-secondary hover:from-orange-600 hover:to-red-700 text-white px-8 py-6 text-lg group cursor-pointer"
           >
             <RefreshCcw className="mr-2 w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
             Try Again

@@ -8,7 +8,7 @@ import { TrainerService } from '@/services/trainer/trainer.service';
 import { Trainer as TrainerType } from '@/types/trainer.types';
 
 const gradients = [
-  "from-orange-500 to-red-600",
+  "from-primary to-secondary",
   "from-red-500 to-pink-600",
   "from-purple-500 to-indigo-600",
   "from-blue-500 to-cyan-600",
@@ -145,7 +145,7 @@ export default function TrainerContent() {
                   key={value}
                   onClick={() => setSelectedFilter(value as any)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${selectedFilter === value
-                    ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg'
+                    ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg'
                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                     }`}
                 >
@@ -191,7 +191,7 @@ export default function TrainerContent() {
                   setSearchQuery('');
                   setSelectedFilter('all');
                 }}
-                className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all"
+                className="bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all"
               >
                 View All Trainers
               </button>
@@ -228,7 +228,7 @@ export default function TrainerContent() {
                                 className="w-24 h-24 rounded-full object-cover"
                               />
                             ) : (
-                              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white text-3xl font-bold">
+                              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-3xl font-bold">
                                 {trainer.user.name.charAt(0)}
                               </div>
                             )}
@@ -362,7 +362,7 @@ export default function TrainerContent() {
 
                       {/* CTA Button */}
                       <Link href={`/trainers/${trainer.id}`}>
-                        <button className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all hover:shadow-lg group/btn">
+                        <button className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary hover:from-orange-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all hover:shadow-lg group/btn">
                           View Profile
                           <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                         </button>

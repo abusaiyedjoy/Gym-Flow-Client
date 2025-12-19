@@ -1,7 +1,7 @@
 
 import AboutContent from '@/components/modules/CommonPages/AboutContent';
 
-
+export const dynamic = "force-static";
 
 export default function AboutPage() {
 

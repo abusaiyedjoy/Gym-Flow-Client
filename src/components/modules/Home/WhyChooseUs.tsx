@@ -5,7 +5,7 @@ const features = [
     icon: Bot,
     title: "AI-Powered Trainer Matching",
     description: "Get matched with the perfect trainer for your fitness goals",
-    gradient: "from-orange-500 to-red-600",
+    gradient: "from-primary to-secondary",
     delay: "0ms"
   },
   {
@@ -64,7 +64,7 @@ export default function WhyChooseUs() {
 
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white mb-6">
             Why Choose{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-red-600">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">
               GymFlow?
             </span>
           </h2>

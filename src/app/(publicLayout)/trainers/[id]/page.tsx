@@ -35,7 +35,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const gradients = [
-    "from-orange-500 to-red-600",
+    "from-primary to-secondary",
     "from-red-500 to-pink-600",
     "from-purple-500 to-indigo-600",
     "from-blue-500 to-cyan-600",
@@ -142,7 +142,7 @@ export default function TrainerDetailPage() {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white text-5xl font-bold">
+                                    <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-5xl font-bold">
                                         {trainer.user.name.charAt(0)}
                                     </div>
                                 )}
@@ -347,7 +347,7 @@ export default function TrainerDetailPage() {
                                         >
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white flex items-center justify-center font-bold">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold">
                                                         {review.member.user.name.charAt(0)}
                                                     </div>
                                                     <div>
@@ -471,7 +471,7 @@ export default function TrainerDetailPage() {
                         </Card>
 
                         {/* CTA Card */}
-                        <Card className="bg-gradient-to-br from-orange-500 to-red-600 text-white border-none">
+                        <Card className="bg-gradient-to-br from-primary to-secondary text-white border-none">
                             <CardContent className="pt-6 space-y-4">
                                 <h3 className="text-xl font-bold">Ready to Start?</h3>
                                 <p className="text-white/90 text-sm">

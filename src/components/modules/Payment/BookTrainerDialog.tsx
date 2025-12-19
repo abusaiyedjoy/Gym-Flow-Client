@@ -179,7 +179,7 @@ export function BookTrainerDialog({
                         <Card>
                             <CardContent className="pt-6">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white flex items-center justify-center font-bold text-2xl flex-shrink-0">
+                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold text-2xl flex-shrink-0">
                                         {trainer.user.name.charAt(0)}
                                     </div>
                                     <div className="flex-1">

@@ -78,7 +78,7 @@ const FitnessCalculator: React.FC = () => {
 
   const calculateMacros = (calories: number, goal: string) => {
     let proteinRatio = 0.3, carbsRatio = 0.5, fatsRatio = 0.2;
-    
+
     if (goal === 'lose') {
       proteinRatio = 0.4;
       carbsRatio = 0.35;
@@ -122,7 +122,7 @@ const FitnessCalculator: React.FC = () => {
     const bmr = calculateBMR(weightKg, heightCm, ageYears, gender === 'male');
     const activityMultiplier = getActivityMultiplier(activityLevel);
     let dailyCalories = Math.round(bmr * activityMultiplier);
-    
+
     if (goal === 'lose') dailyCalories -= 500;
     if (goal === 'gain') dailyCalories += 500;
 
@@ -145,125 +145,125 @@ const FitnessCalculator: React.FC = () => {
     setShowModal(true);
   };
 
-const downloadReport = () => {
-  if (!results) return;
+  const downloadReport = () => {
+    if (!results) return;
 
-  const canvas = document.createElement('canvas');
-  canvas.width = 800;
-  canvas.height = 1100;
-  const ctx = canvas.getContext('2d');
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 1100;
+    const ctx = canvas.getContext('2d');
 
-  if (!ctx) return;
+    if (!ctx) return;
 
-  // ==== BACKGROUND ====
-  ctx.fillStyle = '#121212';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // ==== BACKGROUND ====
+    ctx.fillStyle = '#121212';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // ==== TOP GRADIENT HEADER ====
-  const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  headerGradient.addColorStop(0, '#ff3b2f');  // red
-  headerGradient.addColorStop(1, '#f97316');  // orange
-  ctx.fillStyle = headerGradient;
-  ctx.fillRect(0, 0, canvas.width, 130);
+    // ==== TOP GRADIENT HEADER ====
+    const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    headerGradient.addColorStop(0, '#ff3b2f');  // red
+    headerGradient.addColorStop(1, '#f97316');  // orange
+    ctx.fillStyle = headerGradient;
+    ctx.fillRect(0, 0, canvas.width, 130);
 
-  // ==== TITLE ====
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 40px Arial';
-  ctx.fillText('GymFlow', 50, 65);
-
-  ctx.font = '22px Arial';
-  ctx.fillStyle = '#ffe7d1';
-  ctx.fillText('Your Personalized Fitness Report', 50, 105);
-
-  // ==== SECTION TITLE ====
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 26px Arial';
-  ctx.fillText('Health Metrics', 50, 170);
-
-  // ==== METRICS ====
-  const metrics = [
-    { label: 'BMI', value: `${results.bmi} (${results.bmiCategory})`, y: 220 },
-    { label: 'BMR', value: `${results.bmr} calories/day`, y: 270 },
-    { label: 'Daily Calories', value: `${results.dailyCalories} calories`, y: 320 },
-    { label: 'Body Fat', value: `${results.bodyFat}%`, y: 370 },
-    { label: 'Water Intake', value: `${results.waterIntake} liters/day`, y: 420 },
-    { label: 'Ideal Weight Range', value: `${results.idealWeight.min}-${results.idealWeight.max} kg`, y: 470 },
-  ];
-
-  ctx.font = '20px Arial';
-  metrics.forEach(metric => {
-    // orange-red gradient for labels
-    const labelGrad = ctx.createLinearGradient(0, 0, 200, 0);
-    labelGrad.addColorStop(0, '#ff3b2f');
-    labelGrad.addColorStop(1, '#f97316');
-
-    ctx.fillStyle = labelGrad;
-    ctx.fillText(metric.label + ':', 50, metric.y);
-
+    // ==== TITLE ====
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(metric.value, 300, metric.y);
-  });
+    ctx.font = 'bold 40px Arial';
+    ctx.fillText('GymFlow', 50, 65);
 
-  // ==== MACROS TITLE ====
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 26px Arial';
-  ctx.fillText('Recommended Macros', 50, 550);
+    ctx.font = '22px Arial';
+    ctx.fillStyle = '#ffe7d1';
+    ctx.fillText('Your Personalized Fitness Report', 50, 105);
 
-  // ==== MACROS ====
-  const macroLabels = [
-    { label: 'Protein', value: `${results.macros.protein}g`, y: 600 },
-    { label: 'Carbohydrates', value: `${results.macros.carbs}g`, y: 650 },
-    { label: 'Fats', value: `${results.macros.fats}g`, y: 700 },
-  ];
-
-  ctx.font = '20px Arial';
-  macroLabels.forEach(macro => {
-    const macroGrad = ctx.createLinearGradient(0, 0, 200, 0);
-    macroGrad.addColorStop(0, '#ff3b2f');
-    macroGrad.addColorStop(1, '#f97316');
-
-    ctx.fillStyle = macroGrad;
-    ctx.fillText(macro.label + ':', 50, macro.y);
-
+    // ==== SECTION TITLE ====
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(macro.value, 300, macro.y);
-  });
+    ctx.font = 'bold 26px Arial';
+    ctx.fillText('Health Metrics', 50, 170);
 
-  // ==== FOOTER GRADIENT BAR ====
-  const footerGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  footerGradient.addColorStop(0, '#ff3b2f');
-  footerGradient.addColorStop(1, '#f97316');
-  ctx.fillStyle = footerGradient;
+    // ==== METRICS ====
+    const metrics = [
+      { label: 'BMI', value: `${results.bmi} (${results.bmiCategory})`, y: 220 },
+      { label: 'BMR', value: `${results.bmr} calories/day`, y: 270 },
+      { label: 'Daily Calories', value: `${results.dailyCalories} calories`, y: 320 },
+      { label: 'Body Fat', value: `${results.bodyFat}%`, y: 370 },
+      { label: 'Water Intake', value: `${results.waterIntake} liters/day`, y: 420 },
+      { label: 'Ideal Weight Range', value: `${results.idealWeight.min}-${results.idealWeight.max} kg`, y: 470 },
+    ];
 
-  ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+    ctx.font = '20px Arial';
+    metrics.forEach(metric => {
+      // orange-red gradient for labels
+      const labelGrad = ctx.createLinearGradient(0, 0, 200, 0);
+      labelGrad.addColorStop(0, '#ff3b2f');
+      labelGrad.addColorStop(1, '#f97316');
 
-  // ==== FOOTER TEXT ====
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '16px Arial';
-  ctx.fillText('Generated by GymFlow - Your Fitness Partner', 50, canvas.height - 45);
-  ctx.fillText(new Date().toLocaleDateString(), 50, canvas.height - 20);
+      ctx.fillStyle = labelGrad;
+      ctx.fillText(metric.label + ':', 50, metric.y);
 
-  // ==== DOWNLOAD ====
-  canvas.toBlob((blob) => {
-    if (blob) {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'fitness-report.png';
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-  });
-};
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(metric.value, 300, metric.y);
+    });
+
+    // ==== MACROS TITLE ====
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 26px Arial';
+    ctx.fillText('Recommended Macros', 50, 550);
+
+    // ==== MACROS ====
+    const macroLabels = [
+      { label: 'Protein', value: `${results.macros.protein}g`, y: 600 },
+      { label: 'Carbohydrates', value: `${results.macros.carbs}g`, y: 650 },
+      { label: 'Fats', value: `${results.macros.fats}g`, y: 700 },
+    ];
+
+    ctx.font = '20px Arial';
+    macroLabels.forEach(macro => {
+      const macroGrad = ctx.createLinearGradient(0, 0, 200, 0);
+      macroGrad.addColorStop(0, '#ff3b2f');
+      macroGrad.addColorStop(1, '#f97316');
+
+      ctx.fillStyle = macroGrad;
+      ctx.fillText(macro.label + ':', 50, macro.y);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(macro.value, 300, macro.y);
+    });
+
+    // ==== FOOTER GRADIENT BAR ====
+    const footerGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    footerGradient.addColorStop(0, '#ff3b2f');
+    footerGradient.addColorStop(1, '#f97316');
+    ctx.fillStyle = footerGradient;
+
+    ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+
+    // ==== FOOTER TEXT ====
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '16px Arial';
+    ctx.fillText('Generated by GymFlow - Your Fitness Partner', 50, canvas.height - 45);
+    ctx.fillText(new Date().toLocaleDateString(), 50, canvas.height - 20);
+
+    // ==== DOWNLOAD ====
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'fitness-report.png';
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+  };
 
 
   return (
     <div className="min-h-screen relative text-white py-16 px-4 bg-linear-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden"
     >{/* Background Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]" />
-      <div className={`max-w-7xl mx-auto transition-all duration-300 ${showModal ? 'blur-sm' : ''}`}>
+      <div className={`container mx-auto transition-all duration-300 ${showModal ? 'blur-sm' : ''}`}>
         <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/30 rounded-full text-orange-400 text-sm font-medium mb-6 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/30 rounded-full text-orange-400 text-sm font-medium mb-6 backdrop-blur-sm">
             <HeartPlus className="w-4 h-4" />
             <span>Get Health Report </span>
           </div>
@@ -288,7 +288,7 @@ const downloadReport = () => {
                 </div>
                 <h2 className="text-2xl font-bold">BMI Categories</h2>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-4 bg-black/30 rounded-lg">
                   <span className="text-gray-300">Below 18.5</span>
@@ -316,7 +316,7 @@ const downloadReport = () => {
                 </div>
                 <h2 className="text-2xl font-bold">Why Track Your Health?</h2>
               </div>
-              
+
               <ul className="space-y-3 text-gray-300">
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 mt-1">•</span>
@@ -464,7 +464,7 @@ const downloadReport = () => {
 
               <button
                 onClick={handleCalculate}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-4 rounded-lg font-bold text-lg hover:from-orange-600 hover:to-red-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-orange-500/30"
+                className="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 rounded-lg font-bold text-lg hover:from-orange-600 hover:to-red-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-orange-500/30"
               >
                 Calculate Now
               </button>
@@ -477,7 +477,7 @@ const downloadReport = () => {
       {showModal && results && (
         <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
           <div className="bg-gradient-to-br from-gray-900 to-black border-2 border-orange-500 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-red-600 p-6 flex items-center justify-between rounded-t-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-primary to-secondary p-6 flex items-center justify-between rounded-t-2xl">
               <div>
                 <h2 className="text-3xl font-bold text-white">Your Fitness Report</h2>
               </div>
@@ -561,7 +561,7 @@ const downloadReport = () => {
 
               <button
                 onClick={downloadReport}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-red-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-red-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2"
               >
                 <Download className="w-5 h-5" />
                 Download Health Report

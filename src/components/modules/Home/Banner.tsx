@@ -135,7 +135,7 @@ export default function Banner() {
                                 {currentSlideData.title.split(' ').map((word, idx) => (
                                     <span key={idx}>
                                         {word === 'Dream' || word === 'Your' || word === 'Healthy' || word === 'Fit' ? (
-                                            <span className="text-transparent bg-clip-text bg-linear-to-r from-red-500 to-orange-500">
+                                            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary ">
                                                 {word}{' '}
                                             </span>
                                         ) : (

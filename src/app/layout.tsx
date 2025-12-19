@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "GymFlow - Transform Your Body & Mind | Premium Fitness Center",
   description: "Join GymFlow, the ultimate fitness community with world-class facilities, expert trainers, and personalized workout plans. Transform your life today with 500+ active members.",
   icons: {
-    icon: "/favicon.png",
+    icon: "/Logo.png",
   },
 };
 

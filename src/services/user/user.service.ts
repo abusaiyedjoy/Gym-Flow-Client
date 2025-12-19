@@ -16,9 +16,6 @@ import {
 export class UserService {
     private static readonly BASE_PATH = '/user';
 
-    /**
-     * Get all users with pagination and filters
-     */
     static async getAllUsers(params?: GetUsersParams): Promise<UsersResponse> {
         const queryParams = new URLSearchParams();
 
@@ -43,9 +40,6 @@ export class UserService {
         return await response.json();
     }
 
-    /**
-     * Get user by ID
-     */
     static async getUserById(userId: string): Promise<UserWithDetails> {
         const response = await serverFetch.get(`${this.BASE_PATH}/${userId}`);
 
@@ -58,9 +52,6 @@ export class UserService {
         return result.data;
     }
 
-    /**
-     * Get user statistics
-     */
     static async getUserStats(): Promise<UserStats> {
         const response = await serverFetch.get(`${this.BASE_PATH}/stats`);
 
@@ -73,9 +64,6 @@ export class UserService {
         return result.data;
     }
 
-    /**
-     * Update user profile
-     */
     static async updateUserProfile(
         userId: string,
         data: UpdateUserProfileData
@@ -96,9 +84,6 @@ export class UserService {
         return result.data;
     }
 
-    /**
-     * Toggle user active status
-     */
     static async toggleUserStatus(
         userId: string,
         data: ToggleUserStatusData
@@ -122,9 +107,6 @@ export class UserService {
         return result.data;
     }
 
-    /**
-     * Update user role (Super Admin only)
-     */
     static async updateUserRole(
         userId: string,
         data: UpdateUserRoleData
@@ -148,9 +130,6 @@ export class UserService {
         return result.data;
     }
 
-    /**
-     * Delete user (soft delete)
-     */
     static async deleteUser(userId: string): Promise<{ message: string }> {
         const response = await serverFetch.delete(`${this.BASE_PATH}/${userId}`);
 
@@ -163,9 +142,6 @@ export class UserService {
         return result.data;
     }
 
-    /**
-     * Upload user avatar
-     */
     static async uploadAvatar(
         userId: string,
         file: File

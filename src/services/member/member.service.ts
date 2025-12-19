@@ -17,9 +17,6 @@ import {
 export class MemberService {
   private static readonly BASE_PATH = '/member';
 
-  /**
-   * Get all members with pagination and filters
-   */
   static async getAllMembers(params?: GetMembersParams): Promise<MembersResponse> {
     const queryParams = new URLSearchParams();
 
@@ -46,9 +43,6 @@ export class MemberService {
     return await response.json();
   }
 
-  /**
-   * Get member by ID
-   */
   static async getMemberById(memberId: string): Promise<Member> { 
     const response = await serverFetch.get(`${this.BASE_PATH}/${memberId}`);
 
@@ -61,9 +55,6 @@ export class MemberService {
     return result.data;
   }
 
-  /**
-   * Get member dashboard data
-   */
   static async getMemberDashboard(memberId: string): Promise<MemberDashboard> {
     const response = await serverFetch.get(`${this.BASE_PATH}/${memberId}/dashboard`);
 
@@ -76,9 +67,6 @@ export class MemberService {
     return result.data;
   }
 
-  /**
-   * Get member statistics
-   */
   static async getMemberStats(): Promise<MemberStatsResponse> {
     const response = await serverFetch.get(`${this.BASE_PATH}/stats`);
 
@@ -91,9 +79,6 @@ export class MemberService {
     return result.data;
   }
 
-  /**
-   * Get members with expiring membership
-   */
   static async getExpiringMembers(days: number = 7): Promise<Member[]> {
     const response = await serverFetch.get(`${this.BASE_PATH}/expiring-soon?days=${days}`);
 
@@ -106,9 +91,6 @@ export class MemberService {
     return result.data;
   }
 
-  /**
-   * Create new member
-   */
   static async createMember(_: null, formData: FormData): Promise<ApiResponse<Member>> {
     const payload = {
       name: formData.get("name"),
@@ -143,10 +125,6 @@ export class MemberService {
     return result; // IMPORTANT
   }
 
-
-  /**
-   * Update member
-   */
   static async updateMember(_: null, formData: FormData): Promise<ApiResponse<Member>> {
     const memberId = formData.get("memberId") as string;
 
@@ -180,9 +158,6 @@ export class MemberService {
     return result;
   }
 
-  /**
-   * Update fitness profile
-   */
   static async updateFitnessProfile(
     memberId: string,
     profileData: UpdateFitnessProfileData
@@ -203,9 +178,6 @@ export class MemberService {
     return result.data;
   }
 
-  /**
-   * Assign trainer to member
-   */
   static async assignTrainer(memberId: string, trainerData: AssignTrainerData): Promise<Member> {
     const response = await serverFetch.put(`${this.BASE_PATH}/${memberId}/assign-trainer`, {
       headers: {
@@ -223,9 +195,6 @@ export class MemberService {
     return result.data;
   }
 
-  /**
-   * Update member plan
-   */
   static async updateMemberPlan(memberId: string, planData: UpdateMemberPlanData): Promise<Member> {
     const response = await serverFetch.put(`${this.BASE_PATH}/${memberId}/update-plan`, {
       headers: {
@@ -243,9 +212,6 @@ export class MemberService {
     return result.data;
   }
 
-  /**
-   * Renew membership
-   */
   static async renewMembership(
     memberId: string,
     renewalData: RenewMembershipData
@@ -266,9 +232,6 @@ export class MemberService {
     return result.data;
   }
 
-  /**
-   * Delete member (soft delete)
-   */
   static async deleteMember(memberId: string): Promise<{ message: string }> {
     const response = await serverFetch.delete(`${this.BASE_PATH}/${memberId}`);
 

@@ -7,6 +7,7 @@ import { ChevronDown, ChevronRight, X, LogOut, Dumbbell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { navigationConfig } from '@/lib/navigation.config';
 import { logoutUser } from '@/services/auth/logoutUser';
+import Image from 'next/image';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -58,9 +59,9 @@ export default function Sidebar({ isOpen, onClose, userRole }: SidebarProps) {
 
   const isActive = (href: string) => pathname === href;
 
-const isParentActive = (item: any) =>
-  pathname === item.href ||
-  item.children?.some((child: any) => pathname === child.href);
+  const isParentActive = (item: any) =>
+    pathname === item.href ||
+    item.children?.some((child: any) => pathname === child.href);
 
 
   return (
@@ -72,14 +73,19 @@ const isParentActive = (item: any) =>
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
-        <Link href="/" className="flex items-center space-x-2 group">
-      <div className="p-2 bg-red-600 rounded-lg group-hover:bg-red-700 transition-colors">
-        <Dumbbell className="w-6 h-6 text-white" />
-      </div>
-      <span className="text-xl lg:text-2xl font-bold text-red-600">
-        Gym<span className="text-red-600">Flow</span>
-      </span>
-    </Link>
+        <Link href="/" className="flex items-center group">
+          <Image
+            src="/Logo.png"
+            alt="GymFlow Logo"
+            width={40}
+            height={40}
+            className="rounded-lg"
+          />
+          <span className="text-xl lg:text-2xl mt-4 font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Gym Flow
+          </span>
+
+        </Link>
         <button
           onClick={onClose}
           className="lg:hidden p-2 rounded-md hover:bg-gray-100"

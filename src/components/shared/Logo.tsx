@@ -1,13 +1,9 @@
 import Link from 'next/link';
-import { Dumbbell } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Logo() {
   return (
     <Link href="/" className="flex items-center group">
-      {/* <div className="p-2 bg-linear-to-r from-primary to-destructive rounded-lg group-hover:bg-red-700 transition-colors">
-        <Dumbbell className="w-6 h-6 text-white" />
-      </div> */}
       <Image
         src="/Logo.png"
         alt="GymFlow Logo"

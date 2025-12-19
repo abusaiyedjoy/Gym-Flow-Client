@@ -6,9 +6,37 @@ import { loginUser } from "@/services/auth/loginUser";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/shared/Logo";
 import { toast } from "sonner";
+import { Eye, EyeOffIcon } from "lucide-react";
 
 const SignIn = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+  // Demo credentials
+  const demoCredentials = [
+    {
+      role: "Admin",
+      email: "abu.saidking@gmail.com",
+      password: "01988084185aA@",
+      icon: "\uD83D\uDC68\u200D\uD83D\uDCBB", // 👨‍💻
+    },
+    {
+      role: "Trainer",
+      email: "143princejoy@gmail.com",
+      password: "01988084185aA",
+      icon: "\uD83C\uDFCB\uFE0F", // 🏋️
+    },
+    {
+      role: "Member",
+      email: "tipusahil7@gmail.com",
+      password: "01988084185aA",
+      icon: "\uD83D\uDC65", // 👥
+    },
+  ];
+
+  const handleDemoClick = (cred) => {
+    setValue("email", cred.email, { shouldValidate: true });
+    setValue("password", cred.password, { shouldValidate: true });
+    setFocusedField(null);
+  };
   const [focusedField, setFocusedField] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,16 +52,15 @@ const SignIn = () => {
 
     try {
       const response = await loginUser(null, formData);
-
       if (response?.success) {
         toast.success("Login successful!", {
           description: "Redirecting to dashboard...",
           duration: 3000,
         });
-        
         setTimeout(() => {
           router.push(response.redirectTo || "/dashboard");
         }, 500);
+        return;
       } else {
         toast.error("Login failed", {
           description: response?.message || "Invalid email or password",
@@ -64,7 +91,7 @@ const SignIn = () => {
       {/* Right Side - Form Section */}
       <div className="relative w-full lg:w-1/2 flex flex-col justify-center items-center px-6 md:px-10 py-8 bg-linear-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
-        
+
         {/* Logo */}
         <div className="absolute top-6 left-6">
           <Logo />
@@ -86,16 +113,15 @@ const SignIn = () => {
               Your Email
             </label>
             <div
-              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
-                focusedField === "email"
-                  ? "border-l-4 border-orange-500 bg-gray-700"
-                  : "border-gray-700 bg-gray-800"
-              }`}
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${focusedField === "email"
+                ? "border-l-4 border-orange-500 bg-gray-700"
+                : "border-gray-700 bg-gray-800"
+                }`}
             >
               <input
                 type="email"
                 id="email"
-                {...register("email", { 
+                {...register("email", {
                   required: "Email is required",
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -122,11 +148,10 @@ const SignIn = () => {
               Password
             </label>
             <div
-              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${
-                focusedField === "password"
-                  ? "border-l-4 border-orange-500 bg-gray-700"
-                  : "border-gray-700 bg-gray-800"
-              }`}
+              className={`w-full p-3 rounded flex items-center border-2 transition-all duration-200 ${focusedField === "password"
+                ? "border-l-4 border-orange-500 bg-gray-700"
+                : "border-gray-700 bg-gray-800"
+                }`}
             >
               <input
                 type={showPassword ? "text" : "password"}
@@ -152,39 +177,9 @@ const SignIn = () => {
                 disabled={isLoading}
               >
                 {showPassword ? (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                    />
-                  </svg>
+                  <EyeOffIcon />
                 ) : (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
+                  <Eye />
                 )}
               </button>
             </div>
@@ -193,6 +188,29 @@ const SignIn = () => {
                 {errors.password.message}
               </p>
             )}
+          </div>
+
+          {/* Demo Credentials */}
+          <div className="mb-6">
+            <div className="rounded-lg bg-zinc-800/80 border border-orange-400/30 p-4 flex flex-col gap-2">
+              <div className="text-orange-300 text-sm font-semibold mb-2 flex items-center gap-2">
+                Test Credentials (Click to fill):
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {demoCredentials.map((cred) => (
+                  <button
+                    key={cred.role}
+                    type="button"
+                    onClick={() => handleDemoClick(cred)}
+                    className="flex-1 min-w-[110px] bg-zinc-900 border border-orange-400/40 hover:bg-orange-500/20 transition-colors rounded-md px-3 py-2 flex flex-col items-center cursor-pointer focus:outline-none"
+                  >
+                    <span className="text-lg mb-1">{cred.icon}</span>
+                    <span className="font-semibold text-orange-200 text-xs">{cred.role}</span>
+                    <span className="text-xs text-gray-400 truncate max-w-[90px]">{cred.email}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Remember Me & Forgot Password */}
@@ -206,8 +224,8 @@ const SignIn = () => {
               />
               Remember Me
             </label>
-            <Link 
-              href="/forgot-password" 
+            <Link
+              href="/forgot-password"
               className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent text-sm hover:underline"
             >
               Forgot Password?
@@ -237,8 +255,8 @@ const SignIn = () => {
         {/* Don't have an account? */}
         <p className="text-gray-400 mt-6 text-center z-50">
           Don't have an account?{" "}
-          <Link 
-            href="/signup" 
+          <Link
+            href="/signup"
             className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent hover:underline"
           >
             Register

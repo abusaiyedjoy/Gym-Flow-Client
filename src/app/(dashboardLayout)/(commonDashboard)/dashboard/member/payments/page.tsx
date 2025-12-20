@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader, StatsCard } from "@/components/shared/PageComponents";
-import { DataTable } from "@/components/shared/DataTable";
+import { DataTable, Column } from "@/components/shared/DataTable";
 
 interface Payment {
     id: string;
@@ -90,42 +90,60 @@ export default function PaymentsPage() {
         }
     };
 
-    const columns = [
+    const columns: Column<Payment>[] = [
         {
             header: "Transaction ID",
-            accessor: "id" as keyof Payment,
-            cell: (value: any) => <span className="font-mono text-sm">{value}</span>,
+            accessor: "id",
+            cell: (row) => <span className="font-mono text-sm">{row.id}</span>,
         },
         {
             header: "Date",
-            accessor: (payment: Payment) => new Date(payment.date).toLocaleDateString(),
+            accessor: "date",
+            cell: (row) => <span>{new Date(row.date).toLocaleDateString()}</span>,
         },
         {
             header: "Description",
-            accessor: "description" as keyof Payment,
+            accessor: "description",
         },
         {
             header: "Amount",
-            accessor: "amount" as keyof Payment,
-            cell: (value: any) => <span className="font-semibold">${value.toFixed(2)}</span>,
+            accessor: "amount",
+            cell: (row) => <span className="font-semibold">${row.amount.toFixed(2)}</span>,
         },
         {
             header: "Method",
-            accessor: "method" as keyof Payment,
+            accessor: "method",
         },
         {
             header: "Status",
-            accessor: "status" as keyof Payment,
-            cell: (value: any) => (
-                <Badge className={getStatusColor(value)}>
+            accessor: "status",
+            cell: (row) => (
+                <Badge className={getStatusColor(row.status)}>
                     <span className="flex items-center gap-1">
-                        {getStatusIcon(value)}
-                        {value}
+                        {getStatusIcon(row.status)}
+                        {row.status}
                     </span>
                 </Badge>
             ),
         },
     ];
+
+    const rowActions = (payment: Payment) => (
+        <div className="flex items-center gap-2">
+            {payment.invoiceUrl && (
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                        // Handle download
+                        window.open(payment.invoiceUrl, '_blank');
+                    }}
+                >
+                    <Download className="h-4 w-4" />
+                </Button>
+            )}
+        </div>
+    );
 
     return (
         <div className="space-y-6">
@@ -193,7 +211,7 @@ export default function PaymentsPage() {
                         columns={columns}
                         searchable={true}
                         searchPlaceholder="Search transactions..."
-                        paginated={true}
+                        actions={rowActions}
                     />
                 </CardContent>
             </Card>

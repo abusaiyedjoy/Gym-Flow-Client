@@ -10,7 +10,6 @@ import {
   Target,
   Award,
   Database,
-  Shield,
   Activity,
   ClipboardList,
   BarChart3,
@@ -96,21 +95,6 @@ export const navigationConfig: Record<string, NavItem[]> = {
         { label: 'Members', href: '/dashboard/admin/reports/members', icon: Users },
         { label: 'Trainers', href: '/dashboard/admin/reports/trainers', icon: Dumbbell },
       ],
-    },
-    {
-      label: 'Admins',
-      href: '/dashboard/admin/admins',
-      icon: Shield,
-    },
-    {
-      label: 'System Settings',
-      href: '/dashboard/admin/system-settings',
-      icon: Settings,
-    },
-    {
-      label: 'Database',
-      href: '/dashboard/admin/database',
-      icon: Database,
     },
     {
       label: 'Settings',

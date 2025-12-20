@@ -1,22 +1,14 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Star, Award, Users, Calendar, TrendingUp, Heart, MessageSquare, ArrowRight, Filter, Sparkles, CheckCircle, Globe, Zap, Target, Medal, Phone, Mail, UserCheck, Clock } from "lucide-react";
+import { Search, Star, Users, Calendar, Globe, MessageSquare, ArrowRight, UserCheck, Medal, Clock, CheckCircle } from "lucide-react";
 import Image from 'next/image';
 import Link from 'next/link';
 import { TrainerService } from '@/services/trainer/trainer.service';
 import { Trainer as TrainerType } from '@/types/trainer.types';
+import { TrainerCardSkeleton } from './TrainerSkeleton';
 
-const gradients = [
-  "from-primary to-secondary",
-  "from-red-500 to-pink-600",
-  "from-purple-500 to-indigo-600",
-  "from-blue-500 to-cyan-600",
-  "from-green-500 to-emerald-600",
-  "from-yellow-500 to-orange-600",
-  "from-pink-500 to-rose-600",
-  "from-indigo-500 to-purple-600",
-];
+
 
 export default function TrainerContent() {
   const [trainers, setTrainers] = useState<TrainerType[]>([]);
@@ -26,7 +18,6 @@ export default function TrainerContent() {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'available' | 'experienced'>('all');
   const [sortBy, setSortBy] = useState<'rating' | 'experience' | 'clients'>('rating');
 
-  // Fetch trainers from API
   useEffect(() => {
     const fetchTrainers = async () => {
       try {
@@ -35,7 +26,7 @@ export default function TrainerContent() {
 
         const response = await TrainerService.getAllTrainers({
           page: 1,
-          limit: 50, // Get all trainers for public display
+          limit: 50,
         });
 
         if (response.success && response.data) {
@@ -77,21 +68,9 @@ export default function TrainerContent() {
       }
     });
 
-
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading trainers...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-950 dark:to-zinc-900">
@@ -101,7 +80,6 @@ export default function TrainerContent() {
 
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
               Meet Our{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-600">
@@ -171,7 +149,7 @@ export default function TrainerContent() {
           </div>
 
           <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-            {filteredTrainers.length} trainers found
+            {loading ? 'Loading...' : `${filteredTrainers.length} trainers found`}
           </div>
         </div>
       </section>
@@ -179,7 +157,13 @@ export default function TrainerContent() {
       {/* Trainers Grid */}
       <section className="py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {filteredTrainers.length === 0 ? (
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, index) => (
+                <TrainerCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : filteredTrainers.length === 0 ? (
             <div className="max-w-md mx-auto text-center p-12 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-2xl font-bold mb-2">No trainers found</h3>
@@ -198,7 +182,7 @@ export default function TrainerContent() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredTrainers.map((trainer, index) => {
+              {filteredTrainers.map((trainer) => {
                 const capacityPercentage = (trainer.currentClients / trainer.maxCapacity) * 100;
                 const isFull = capacityPercentage >= 100;
 
@@ -208,7 +192,7 @@ export default function TrainerContent() {
                     className="group relative bg-white dark:bg-zinc-900 rounded-3xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border border-zinc-200 dark:border-zinc-800"
                   >
                     {/* Gradient Header */}
-                    <div className={`relative h-48 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden`}>
+                    <div className="relative h-48 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
                       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
 
                       {/* Gradient Orbs */}
@@ -226,6 +210,7 @@ export default function TrainerContent() {
                                 width={100}
                                 height={100}
                                 className="w-24 h-24 rounded-full object-cover"
+                                unoptimized
                               />
                             ) : (
                               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-3xl font-bold">

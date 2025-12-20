@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, Crown, Dumbbell, Flame, Heart, Shield, Sparkles, Star, Trophy, Users, Zap, Loader2, ArrowRight } from "lucide-react";
+import { Check, Crown, Dumbbell, Flame, Heart, Shield, Star, Trophy, Users, Zap, ArrowRight } from "lucide-react";
 import { PlanService } from "@/services/plan/plan.service";
 import { MembershipPlan } from "@/types/plan.types";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { getUserInfo } from "@/services/auth/getUserInfo";
 import { toast } from "sonner";
+import { PricingCardSkeleton } from "@/components/modules/CommonPages/PricingSkeleton";
 
 // Icon mapping for plans
 const planIcons: Record<string, any> = {
@@ -17,6 +16,8 @@ const planIcons: Record<string, any> = {
   'Premium': Star,
   'Basic': Heart,
 };
+
+
 
 export default function PricingSection() {
   const router = useRouter();
@@ -35,13 +36,11 @@ export default function PricingSection() {
         const userInfo = await getUserInfo();
         if (userInfo && userInfo.id) {
           setIsLoggedIn(true);
-          // Check if user is a member
           if (userInfo.member) {
             setIsMember(true);
           }
         }
       } catch (err) {
-        // User not logged in
         setIsLoggedIn(false);
         setIsMember(false);
       }
@@ -71,7 +70,6 @@ export default function PricingSection() {
 
   const getPrice = (basePrice: number, durationDays: number) => {
     if (billingCycle === "yearly") {
-      // Calculate yearly price (assuming monthly plans, multiply by 12)
       const monthsInPlan = durationDays / 30;
       return Math.round((basePrice / monthsInPlan) * 12);
     }
@@ -87,44 +85,36 @@ export default function PricingSection() {
     return finalPrice;
   };
 
-  // Get icon for plan
   const getPlanIcon = (planName: string) => {
     return planIcons[planName] || Dumbbell;
   };
 
-  // Handle plan selection and navigation
   const handleBuyNow = (planId: string) => {
     if (!isLoggedIn) {
-      // Not logged in - redirect to signin
       router.push("/signin");
       return;
     }
 
     if (!isMember) {
-      // Logged in but not a member - redirect to signup
       toast.error("Please complete member registration first");
       router.push("/signup");
       return;
     }
 
-    // Member is logged in - redirect to renew page with selected plan
     router.push(`/dashboard/member/membership/renew?planId=${planId}`);
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <section className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
       {/* Hero Header */}
       <div className="relative py-24 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
-        {/* Animated Grid Background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] animate-pulse" />
 
-        {/* Gradient Orbs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-600/20 rounded-full blur-3xl animate-pulse" />
 
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Choose Your{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
@@ -167,26 +157,36 @@ export default function PricingSection() {
       {/* Pricing Cards */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-16 relative z-10 pb-20">
         {loading ? (
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-              <p className="text-muted-foreground">Loading membership plans...</p>
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <PricingCardSkeleton />
+            <PricingCardSkeleton isPopular />
+            <PricingCardSkeleton />
           </div>
         ) : error ? (
           <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center space-y-4">
-              <p className="text-red-600 font-semibold">Failed to load plans</p>
-              <p className="text-muted-foreground">{error}</p>
+            <div className="text-center space-y-4 max-w-md mx-auto p-8 bg-white dark:bg-zinc-900 rounded-3xl shadow-xl">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Failed to load plans</h3>
+              <p className="text-gray-600 dark:text-gray-400">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all"
+              >
+                Try Again
+              </button>
             </div>
           </div>
         ) : plans.length === 0 ? (
           <div className="flex items-center justify-center min-h-[400px]">
-            <p className="text-muted-foreground">No membership plans available</p>
+            <div className="text-center space-y-4 max-w-md mx-auto p-8 bg-white dark:bg-zinc-900 rounded-3xl shadow-xl">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">No Plans Available</h3>
+              <p className="text-gray-600 dark:text-gray-400">Check back soon for membership options</p>
+            </div>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 container mx-auto">
-            {plans.map((plan, index) => {
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {plans.map((plan) => {
               const Icon = getPlanIcon(plan.name);
               const isSelected = selectedPlan === plan.id;
               const finalPrice = plan.discount > 0
@@ -219,9 +219,9 @@ export default function PricingSection() {
 
                   <div
                     onClick={() => setSelectedPlan(plan.id)}
-                    className={`relative bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-500 cursor-pointer ${plan.isPopular
+                    className={`relative bg-white dark:bg-zinc-900 rounded-3xl shadow-xl overflow-hidden transition-all duration-500 cursor-pointer ${plan.isPopular
                       ? "border-2 border-red-500 shadow-2xl shadow-red-500/20"
-                      : "border border-gray-200 hover:border-red-300"
+                      : "border border-gray-200 dark:border-zinc-800 hover:border-red-300"
                       } ${isSelected ? "ring-4 ring-red-500 scale-105" : "hover:shadow-2xl hover:-translate-y-2"
                       }`}
                   >
@@ -237,20 +237,20 @@ export default function PricingSection() {
                         <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform duration-300">
                           <Icon className="w-8 h-8 text-white" />
                         </div>
-                        <div className="flex items-center gap-1 text-gray-500 text-sm">
+                        <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
                           <Users className="w-4 h-4" />
                           <span>{plan._count?.members || 0}</span>
                         </div>
                       </div>
 
                       {/* Plan Name & Description */}
-                      <h3 className="text-3xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                      <p className="text-gray-600 text-sm mb-6">{plan.description}</p>
+                      <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{plan.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">{plan.description}</p>
 
                       {/* Price */}
                       <div className="mb-6">
                         <div className="flex items-baseline gap-3">
-                          <span className="text-5xl font-bold text-gray-900">
+                          <span className="text-5xl font-bold text-gray-900 dark:text-white">
                             ৳{finalPrice}
                           </span>
                           {plan.discount > 0 && (
@@ -259,15 +259,15 @@ export default function PricingSection() {
                             </span>
                           )}
                         </div>
-                        <span className="text-gray-500 text-sm">
+                        <span className="text-gray-500 dark:text-gray-400 text-sm">
                           /{billingCycle === "monthly" ? "month" : "year"}
                         </span>
                       </div>
 
                       {/* Personal Training Sessions */}
                       {plan.personalTrainingSessions > 0 && (
-                        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl">
-                          <div className="flex items-center gap-2 text-red-600">
+                        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                          <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                             <Zap className="w-5 h-5" />
                             <span className="font-semibold text-sm">
                               {plan.personalTrainingSessions === 999
@@ -288,7 +288,7 @@ export default function PricingSection() {
                                 <Check className="w-3 h-3 text-white" strokeWidth={3} />
                               </div>
                             </div>
-                            <span className="text-gray-700 text-sm leading-relaxed">
+                            <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                               {feature}
                             </span>
                           </div>
@@ -300,21 +300,14 @@ export default function PricingSection() {
                         onClick={() => handleBuyNow(plan.id)}
                         className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${plan.isPopular
                           ? "bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-2xl hover:shadow-red-500/50 hover:scale-105"
-                          : "bg-gray-100 text-gray-900 border-2 border-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent"
+                          : "bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-zinc-700 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent"
                           }`}
                       >
-                        {isSelected ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <Check className="w-5 h-5" />
-                            {isLoggedIn && isMember ? "Buy Now" : "Get Started"}
-                            <ArrowRight className="w-5 h-5" />
-                          </span>
-                        ) : (
-                          <span className="flex items-center justify-center gap-2">
-                            {isLoggedIn && isMember ? "Buy Now" : "Get Started"}
-                            <ArrowRight className="w-5 h-5" />
-                          </span>
-                        )}
+                        <span className="flex items-center justify-center gap-2">
+                          {isSelected && <Check className="w-5 h-5" />}
+                          {isLoggedIn && isMember ? "Buy Now" : "Get Started"}
+                          <ArrowRight className="w-5 h-5" />
+                        </span>
                       </button>
                     </div>
 
@@ -331,8 +324,8 @@ export default function PricingSection() {
       {/* Benefits Section */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-3xl p-12 shadow-xl">
-            <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
+          <div className="bg-gradient-to-br from-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800 border-2 border-gray-200 dark:border-zinc-700 rounded-3xl p-12 shadow-xl">
+            <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
               Why Choose Us?
             </h3>
 
@@ -341,8 +334,8 @@ export default function PricingSection() {
                 <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform">
                   <Check className="w-8 h-8 text-white" strokeWidth={3} />
                 </div>
-                <h4 className="text-xl font-bold text-gray-900">No Hidden Fees</h4>
-                <p className="text-gray-600">
+                <h4 className="text-xl font-bold text-gray-900 dark:text-white">No Hidden Fees</h4>
+                <p className="text-gray-600 dark:text-gray-400">
                   Crystal clear pricing with absolutely no surprises or hidden charges
                 </p>
               </div>
@@ -351,8 +344,8 @@ export default function PricingSection() {
                 <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform">
                   <Zap className="w-8 h-8 text-white" />
                 </div>
-                <h4 className="text-xl font-bold text-gray-900">Cancel Anytime</h4>
-                <p className="text-gray-600">
+                <h4 className="text-xl font-bold text-gray-900 dark:text-white">Cancel Anytime</h4>
+                <p className="text-gray-600 dark:text-gray-400">
                   Complete flexibility with no long-term contracts or commitments
                 </p>
               </div>
@@ -361,8 +354,8 @@ export default function PricingSection() {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
                   <Shield className="w-8 h-8 text-white" />
                 </div>
-                <h4 className="text-xl font-bold text-gray-900">7-Day Money Back</h4>
-                <p className="text-gray-600">
+                <h4 className="text-xl font-bold text-gray-900 dark:text-white">7-Day Money Back</h4>
+                <p className="text-gray-600 dark:text-gray-400">
                   Not satisfied? Get a full refund within the first week, no questions asked
                 </p>
               </div>

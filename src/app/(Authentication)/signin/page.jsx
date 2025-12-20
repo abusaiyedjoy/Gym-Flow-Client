@@ -21,13 +21,13 @@ const SignIn = () => {
     {
       role: "Trainer",
       email: "143princejoy@gmail.com",
-      password: "01988084185aA",
+      password: "01988084185aA@",
       icon: "\uD83C\uDFCB\uFE0F", // 🏋️
     },
     {
       role: "Member",
-      email: "tipusahil7@gmail.com",
-      password: "01988084185aA",
+      email: "khadijakhatunmukta1@gmail.com",
+      password: "01988084185aA@",
       icon: "\uD83D\uDC65", // 👥
     },
   ];

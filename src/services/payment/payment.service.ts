@@ -1,9 +1,7 @@
-// services/payment/payment.service.ts
 
 import { serverFetch } from '@/lib/serverFetch';
 import {
     Payment,
-    PaymentsResponse,
     PaymentResponse,
     InitiatePaymentData,
     InitiatePaymentResponse,
@@ -12,13 +10,27 @@ import {
     GetPaymentsParams,
 } from '@/types/payment.types';
 
+interface PaymentsResponseWithPagination {
+    success: boolean;
+    message: string;
+    data: Payment[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNext: boolean;
+        hasPrev: boolean;
+    };
+}
+
 export class PaymentService {
     private static readonly BASE_PATH = '/payment';
 
     /**
      * Get all payments with pagination and filters
      */
-    static async getAllPayments(params?: GetPaymentsParams): Promise<PaymentsResponse> {
+    static async getAllPayments(params?: GetPaymentsParams): Promise<PaymentsResponseWithPagination> {
         const queryParams = new URLSearchParams();
 
         if (params?.page) queryParams.append('page', params.page.toString());
@@ -68,7 +80,7 @@ export class PaymentService {
         memberId: string,
         page: number = 1,
         limit: number = 10
-    ): Promise<PaymentsResponse> {
+    ): Promise<PaymentsResponseWithPagination> {
         const response = await serverFetch.get(
             `${this.BASE_PATH}/member/${memberId}?page=${page}&limit=${limit}`
         );
@@ -210,12 +222,26 @@ export class PaymentService {
     /**
      * Get overdue payments
      */
-    static async getOverduePayments(): Promise<PaymentsResponse> {
+    static async getOverduePayments(): Promise<PaymentsResponseWithPagination> {
         const response = await serverFetch.get(`${this.BASE_PATH}/overdue`);
 
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to fetch overdue payments');
+        }
+
+        return await response.json();
+    }
+
+    /**
+     * Get pending payments
+     */
+    static async getPendingPayments(): Promise<PaymentsResponseWithPagination> {
+        const response = await serverFetch.get(`${this.BASE_PATH}/pending`);
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch pending payments');
         }
 
         return await response.json();
@@ -238,5 +264,19 @@ export class PaymentService {
             console.error('Failed to fetch pending payment:', error);
             return null;
         }
+    }
+
+    /**
+     * Test payment success (for development)
+     */
+    static async testPaymentSuccess(paymentId: string): Promise<PaymentResponse> {
+        const response = await serverFetch.post(`${this.BASE_PATH}/test-success/${paymentId}`);
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to test payment success');
+        }
+
+        return await response.json();
     }
 }

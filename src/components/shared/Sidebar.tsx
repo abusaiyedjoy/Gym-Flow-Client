@@ -125,9 +125,6 @@ export default function Sidebar({ isOpen, onClose, userRole }: SidebarProps) {
   );
 }
 
-/* -------------------------------------------------- */
-/* NAV ITEM */
-/* -------------------------------------------------- */
 
 function NavItem({ item, isActive, isParentActive, expandedItems, toggleExpand }: any) {
   const hasChildren = item.children?.length > 0;
